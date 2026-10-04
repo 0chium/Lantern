@@ -25,6 +25,7 @@ LanternModule_FILES = LanternModule.mm
 LanternModule_CFLAGS = -fobjc-arc
 LanternModule_LDFLAGS = -Wl,-undefined,dynamic_lookup
 LanternModule_FRAMEWORKS = UIKit
+LanternModule_LIBRARIES = substrate
 LanternModule_INSTALL_PATH = /Library/ControlCenter/Bundles
 
 include $(THEOS_MAKE_PATH)/tweak.mk
