@@ -24,6 +24,7 @@ BUNDLE_NAME = LanternModule
 LanternModule_FILES = LanternModule.mm
 LanternModule_CFLAGS = -fobjc-arc
 LanternModule_FRAMEWORKS = UIKit
+LanternModule_PRIVATE_FRAMEWORKS = ControlCenterUIKit
 LanternModule_INSTALL_PATH = /Library/ControlCenter/Bundles
 
 include $(THEOS_MAKE_PATH)/tweak.mk
