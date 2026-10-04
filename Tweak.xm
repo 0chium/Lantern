@@ -1,4 +1,5 @@
 #include <dlfcn.h>
+#include <dispatch/dispatch.h>
 #include <substrate.h>
 #include <stdint.h>
 #include <stdbool.h>
