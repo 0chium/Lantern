@@ -14,4 +14,10 @@ Lantern_FILES = Tweak.xm
 Lantern_CFLAGS = -fobjc-arc
 Lantern_LIBRARIES = substrate
 
+TOOL_NAME = lanternctl
+
+lanternctl_FILES = LanternCtl.c
+lanternctl_INSTALL_PATH = /usr/bin
+
 include $(THEOS_MAKE_PATH)/tweak.mk
+include $(THEOS_MAKE_PATH)/tool.mk
