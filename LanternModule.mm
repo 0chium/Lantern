@@ -4,6 +4,7 @@
 #import <dlfcn.h>
 #import <notify.h>
 #import <stdint.h>
+#import <substrate.h>
 
 @protocol CCUIContentModule <NSObject>
 @required
@@ -22,6 +23,10 @@ static const char *kLanternStateNotification = "com.ochium.lantern.state";
 static IMP gAppleButtonTapped = NULL;
 static IMP gAppleSliderChanged = NULL;
 static IMP gAppleUpdateControls = NULL;
+static void (*gOriginalTurnOn)(id, SEL, id) = NULL;
+static void (*gOriginalTurnOff)(id, SEL, id) = NULL;
+static void (*gOriginalTurnOffCoolDown)(id, SEL, id, BOOL) = NULL;
+static BOOL gLanternPowerRequest = NO;
 
 static BOOL LanternState(BOOL write, BOOL value, BOOL *result)
 {
@@ -85,6 +90,47 @@ static void LanternReapplyLevel(NSUInteger level)
     }
 }
 
+static void LanternTurnOnHook(id self, SEL cmd, id reason)
+{
+    if (!gLanternPowerRequest && LanternIsWarm()) LanternSetWarm(NO);
+    gOriginalTurnOn(self, cmd, reason);
+}
+
+static void LanternTurnOffHook(id self, SEL cmd, id reason)
+{
+    LanternSetWarm(NO);
+    gOriginalTurnOff(self, cmd, reason);
+}
+
+static void LanternTurnOffCoolDownHook(id self, SEL cmd, id reason, BOOL coolDown)
+{
+    LanternSetWarm(NO);
+    gOriginalTurnOffCoolDown(self, cmd, reason, coolDown);
+}
+
+static void LanternInstallPowerHooks(void)
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        Class cls = NSClassFromString(@"SBUIFlashlightController");
+        if (!cls) return;
+
+        Method on = class_getInstanceMethod(cls, NSSelectorFromString(@"turnFlashlightOnForReason:"));
+        Method off = class_getInstanceMethod(cls, NSSelectorFromString(@"turnFlashlightOffForReason:"));
+        Method offCool = class_getInstanceMethod(cls, NSSelectorFromString(@"turnFlashlightOffForReason:withCoolDown:"));
+
+        if (on) MSHookFunction((void *)method_getImplementation(on),
+                               (void *)LanternTurnOnHook,
+                               (void **)&gOriginalTurnOn);
+        if (off) MSHookFunction((void *)method_getImplementation(off),
+                                (void *)LanternTurnOffHook,
+                                (void **)&gOriginalTurnOff);
+        if (offCool) MSHookFunction((void *)method_getImplementation(offCool),
+                                    (void *)LanternTurnOffCoolDownHook,
+                                    (void **)&gOriginalTurnOffCoolDown);
+    });
+}
+
 static void LanternSetSelected(id self, BOOL selected)
 {
     SEL sel = NSSelectorFromString(@"setSelected:");
@@ -111,8 +157,10 @@ static void LanternButtonTapped(id self, SEL cmd, id sender, id event)
     }
 
     if (!LanternSetWarm(YES)) return;
+    gLanternPowerRequest = YES;
     if (gAppleButtonTapped)
         ((void (*)(id, SEL, id, id))gAppleButtonTapped)(self, cmd, sender, event);
+    gLanternPowerRequest = NO;
     if (LanternLevel() == 0) LanternSetWarm(NO);
 }
 
@@ -142,6 +190,7 @@ static Class LanternControllerClass(void)
     static dispatch_once_t onceToken;
 
     dispatch_once(&onceToken, ^{
+        LanternInstallPowerHooks();
         dlopen("/System/Library/ControlCenter/Bundles/FlashlightModule.bundle/FlashlightModule",
                RTLD_NOW | RTLD_GLOBAL);
 
