@@ -1,4 +1,8 @@
 #import <UIKit/UIKit.h>
+#import <objc/message.h>
+#import <dlfcn.h>
+#import <notify.h>
+#import <stdint.h>
 
 @protocol CCUIContentModule <NSObject>
 @required
@@ -10,34 +14,212 @@
 - (UIViewController *)backgroundViewControllerForContext:(id)context;
 @end
 
+typedef uint32_t (*LanternNotifyRegisterCheckFunction)(
+    const char *name,
+    int *outToken
+);
+
+typedef uint32_t (*LanternNotifySetStateFunction)(
+    int token,
+    uint64_t state
+);
+
+typedef uint32_t (*LanternNotifyPostFunction)(
+    const char *name
+);
+
+typedef uint32_t (*LanternNotifyCancelFunction)(
+    int token
+);
+
+static const char *kLanternStateNotification =
+    "com.ochium.lantern.state";
+
+static BOOL LanternSetWarmState(BOOL enabled)
+{
+    LanternNotifyRegisterCheckFunction notifyRegisterCheck =
+        (LanternNotifyRegisterCheckFunction)dlsym(
+            RTLD_DEFAULT,
+            "notify_register_check"
+        );
+
+    LanternNotifySetStateFunction notifySetState =
+        (LanternNotifySetStateFunction)dlsym(
+            RTLD_DEFAULT,
+            "notify_set_state"
+        );
+
+    LanternNotifyPostFunction notifyPost =
+        (LanternNotifyPostFunction)dlsym(
+            RTLD_DEFAULT,
+            "notify_post"
+        );
+
+    LanternNotifyCancelFunction notifyCancel =
+        (LanternNotifyCancelFunction)dlsym(
+            RTLD_DEFAULT,
+            "notify_cancel"
+        );
+
+    if (notifyRegisterCheck == NULL ||
+        notifySetState == NULL ||
+        notifyPost == NULL ||
+        notifyCancel == NULL) {
+        return NO;
+    }
+
+    int token = -1;
+
+    if (notifyRegisterCheck(
+            kLanternStateNotification,
+            &token
+        ) != 0) {
+        return NO;
+    }
+
+    BOOL success =
+        notifySetState(token, enabled ? 1 : 0) == 0;
+
+    if (success) {
+        notifyPost(kLanternStateNotification);
+    }
+
+    notifyCancel(token);
+    return success;
+}
+
+static id LanternFlashlightController(void)
+{
+    Class controllerClass =
+        NSClassFromString(@"SBUIFlashlightController");
+
+    SEL sharedInstanceSelector =
+        NSSelectorFromString(@"sharedInstance");
+
+    if (controllerClass == Nil ||
+        ![controllerClass respondsToSelector:
+            sharedInstanceSelector]) {
+        return nil;
+    }
+
+    return ((id (*)(id, SEL))objc_msgSend)(
+        controllerClass,
+        sharedInstanceSelector
+    );
+}
+
+static NSInteger LanternFlashlightLevel(id controller)
+{
+    SEL levelSelector =
+        NSSelectorFromString(@"level");
+
+    if (controller == nil ||
+        ![controller respondsToSelector:levelSelector]) {
+        return 0;
+    }
+
+    return ((NSInteger (*)(id, SEL))objc_msgSend)(
+        controller,
+        levelSelector
+    );
+}
+
 @interface LanternModuleViewController : UIViewController
+@property(nonatomic, strong) UIButton *button;
 @end
 
 @implementation LanternModuleViewController
 
 - (void)loadView
 {
-    UIView *view = [[UIView alloc] initWithFrame:CGRectZero];
-    view.backgroundColor = [UIColor clearColor];
+    UIButton *button =
+        [UIButton buttonWithType:UIButtonTypeSystem];
 
-    UIImage *image = [UIImage systemImageNamed:@"lightbulb.fill"];
-    UIImageView *imageView =
-        [[UIImageView alloc] initWithImage:image];
+    button.backgroundColor = [UIColor clearColor];
+    button.tintColor = [UIColor labelColor];
 
-    imageView.contentMode = UIViewContentModeScaleAspectFit;
-    imageView.tintColor = [UIColor labelColor];
-    imageView.translatesAutoresizingMaskIntoConstraints = NO;
+    UIImage *image =
+        [UIImage systemImageNamed:@"flashlight.on.fill"];
 
-    [view addSubview:imageView];
+    [button setImage:image forState:UIControlStateNormal];
 
-    [NSLayoutConstraint activateConstraints:@[
-        [imageView.centerXAnchor constraintEqualToAnchor:view.centerXAnchor],
-        [imageView.centerYAnchor constraintEqualToAnchor:view.centerYAnchor],
-        [imageView.widthAnchor constraintEqualToConstant:24.0],
-        [imageView.heightAnchor constraintEqualToConstant:24.0]
-    ]];
+    button.imageView.contentMode =
+        UIViewContentModeScaleAspectFit;
 
-    self.view = view;
+    [button addTarget:self
+               action:@selector(lanternTapped:)
+     forControlEvents:UIControlEventTouchUpInside];
+
+    self.button = button;
+    self.view = button;
+
+    [self updateAppearance];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [self updateAppearance];
+}
+
+- (void)updateAppearance
+{
+    id controller = LanternFlashlightController();
+    BOOL active = LanternFlashlightLevel(controller) > 0;
+
+    self.button.tintColor =
+        active ? [UIColor systemYellowColor]
+               : [UIColor labelColor];
+}
+
+- (void)lanternTapped:(id)sender
+{
+    id controller = LanternFlashlightController();
+
+    if (controller == nil)
+        return;
+
+    BOOL active =
+        LanternFlashlightLevel(controller) > 0;
+
+    if (active) {
+        SEL offSelector =
+            NSSelectorFromString(
+                @"turnFlashlightOffForReason:"
+            );
+
+        if ([controller respondsToSelector:offSelector]) {
+            ((void (*)(id, SEL, id))objc_msgSend)(
+                controller,
+                offSelector,
+                @"Control Center"
+            );
+        }
+
+        LanternSetWarmState(NO);
+    }
+    else {
+        if (!LanternSetWarmState(YES))
+            return;
+
+        SEL onSelector =
+            NSSelectorFromString(
+                @"turnFlashlightOnForReason:"
+            );
+
+        if ([controller respondsToSelector:onSelector]) {
+            ((void (*)(id, SEL, id))objc_msgSend)(
+                controller,
+                onSelector,
+                @"Control Center"
+            );
+        }
+        else {
+            LanternSetWarmState(NO);
+        }
+    }
+
+    [self updateAppearance];
 }
 
 @end
