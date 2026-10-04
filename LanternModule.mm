@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <objc/message.h>
+#import <objc/runtime.h>
 #import <dlfcn.h>
 #import <notify.h>
 #import <stdint.h>
@@ -7,395 +8,203 @@
 @protocol CCUIContentModule <NSObject>
 @required
 - (UIViewController *)contentViewController;
-
 @optional
 - (UIViewController *)contentViewControllerForContext:(id)context;
-- (UIViewController *)backgroundViewController;
-- (UIViewController *)backgroundViewControllerForContext:(id)context;
 @end
 
-@interface CCUISliderButtonModuleViewController : UIViewController
-- (id)sliderView;
-- (id)createSliderView;
-- (id)buttonView;
-- (BOOL)isSelected;
-- (BOOL)isExpanded;
-- (void)setSelected:(BOOL)selected;
-- (void)setTitle:(NSString *)title;
-- (void)setGlyphImage:(UIImage *)image;
-- (void)setSelectedGlyphImage:(UIImage *)image;
-- (void)setSelectedGlyphColor:(UIColor *)color;
-@end
+typedef uint32_t (*NotifyRegisterCheckFn)(const char *, int *);
+typedef uint32_t (*NotifySetStateFn)(int, uint64_t);
+typedef uint32_t (*NotifyGetStateFn)(int, uint64_t *);
+typedef uint32_t (*NotifyPostFn)(const char *);
+typedef uint32_t (*NotifyCancelFn)(int);
 
-@interface CCUISteppedSliderView : UIControl
-- (void)setNumberOfSteps:(NSUInteger)steps;
-- (void)setFirstStepIsOff:(BOOL)firstStepIsOff;
-- (NSUInteger)step;
-- (void)setStep:(NSUInteger)step;
-@end
+static const char *kLanternStateNotification = "com.ochium.lantern.state";
+static IMP gAppleButtonTapped = NULL;
+static IMP gAppleSliderChanged = NULL;
+static IMP gAppleUpdateControls = NULL;
 
-typedef uint32_t (*LanternNotifyRegisterCheckFunction)(
-    const char *name,
-    int *outToken
-);
-
-typedef uint32_t (*LanternNotifySetStateFunction)(
-    int token,
-    uint64_t state
-);
-
-typedef uint32_t (*LanternNotifyPostFunction)(
-    const char *name
-);
-
-typedef uint32_t (*LanternNotifyCancelFunction)(
-    int token
-);
-
-static const char *kLanternStateNotification =
-    "com.ochium.lantern.state";
-
-static BOOL LanternSetWarmState(BOOL enabled)
+static BOOL LanternState(BOOL write, BOOL value, BOOL *result)
 {
-    LanternNotifyRegisterCheckFunction notifyRegisterCheck =
-        (LanternNotifyRegisterCheckFunction)dlsym(
-            RTLD_DEFAULT,
-            "notify_register_check"
-        );
-
-    LanternNotifySetStateFunction notifySetState =
-        (LanternNotifySetStateFunction)dlsym(
-            RTLD_DEFAULT,
-            "notify_set_state"
-        );
-
-    LanternNotifyPostFunction notifyPost =
-        (LanternNotifyPostFunction)dlsym(
-            RTLD_DEFAULT,
-            "notify_post"
-        );
-
-    LanternNotifyCancelFunction notifyCancel =
-        (LanternNotifyCancelFunction)dlsym(
-            RTLD_DEFAULT,
-            "notify_cancel"
-        );
-
-    if (notifyRegisterCheck == NULL ||
-        notifySetState == NULL ||
-        notifyPost == NULL ||
-        notifyCancel == NULL) {
-        return NO;
-    }
+    NotifyRegisterCheckFn reg = (NotifyRegisterCheckFn)dlsym(RTLD_DEFAULT, "notify_register_check");
+    NotifySetStateFn set = (NotifySetStateFn)dlsym(RTLD_DEFAULT, "notify_set_state");
+    NotifyGetStateFn get = (NotifyGetStateFn)dlsym(RTLD_DEFAULT, "notify_get_state");
+    NotifyPostFn post = (NotifyPostFn)dlsym(RTLD_DEFAULT, "notify_post");
+    NotifyCancelFn cancel = (NotifyCancelFn)dlsym(RTLD_DEFAULT, "notify_cancel");
+    if (!reg || !get || !cancel || (write && (!set || !post))) return NO;
 
     int token = -1;
+    if (reg(kLanternStateNotification, &token) != 0) return NO;
 
-    if (notifyRegisterCheck(
-            kLanternStateNotification,
-            &token
-        ) != 0) {
-        return NO;
+    BOOL ok = NO;
+    if (write) {
+        ok = set(token, value ? 1 : 0) == 0;
+        if (ok) post(kLanternStateNotification);
+    } else {
+        uint64_t state = 0;
+        ok = get(token, &state) == 0;
+        if (ok && result) *result = state != 0;
     }
-
-    BOOL success =
-        notifySetState(token, enabled ? 1 : 0) == 0;
-
-    if (success) {
-        notifyPost(kLanternStateNotification);
-    }
-
-    notifyCancel(token);
-    return success;
+    cancel(token);
+    return ok;
 }
 
-static id LanternFlashlightController(void)
+static BOOL LanternSetWarm(BOOL enabled)
 {
-    Class controllerClass =
-        NSClassFromString(@"SBUIFlashlightController");
-
-    SEL sharedInstanceSelector =
-        NSSelectorFromString(@"sharedInstance");
-
-    if (controllerClass == Nil ||
-        ![controllerClass respondsToSelector:
-            sharedInstanceSelector]) {
-        return nil;
-    }
-
-    return ((id (*)(id, SEL))objc_msgSend)(
-        controllerClass,
-        sharedInstanceSelector
-    );
+    return LanternState(YES, enabled, NULL);
 }
 
-static NSUInteger LanternFlashlightLevel(id controller)
+static BOOL LanternIsWarm(void)
 {
-    SEL selector = NSSelectorFromString(@"level");
-
-    if (controller == nil ||
-        ![controller respondsToSelector:selector]) {
-        return 0;
-    }
-
-    return ((NSUInteger (*)(id, SEL))objc_msgSend)(
-        controller,
-        selector
-    );
+    BOOL enabled = NO;
+    LanternState(NO, NO, &enabled);
+    return enabled;
 }
 
-static BOOL LanternFlashlightAvailable(id controller)
+static id LanternFlashlight(void)
 {
-    SEL selector = NSSelectorFromString(@"isAvailable");
-
-    if (controller == nil ||
-        ![controller respondsToSelector:selector]) {
-        return NO;
-    }
-
-    return ((BOOL (*)(id, SEL))objc_msgSend)(
-        controller,
-        selector
-    );
+    Class cls = NSClassFromString(@"SBUIFlashlightController");
+    SEL sel = NSSelectorFromString(@"sharedInstance");
+    if (!cls || ![cls respondsToSelector:sel]) return nil;
+    return ((id (*)(id, SEL))objc_msgSend)(cls, sel);
 }
 
-static void LanternSetFlashlightLevel(
-    id controller,
-    NSUInteger level
-)
+static NSUInteger LanternLevel(void)
 {
-    SEL selector = NSSelectorFromString(@"setLevel:");
+    id flashlight = LanternFlashlight();
+    SEL sel = NSSelectorFromString(@"level");
+    if (!flashlight || ![flashlight respondsToSelector:sel]) return 0;
+    return ((NSUInteger (*)(id, SEL))objc_msgSend)(flashlight, sel);
+}
 
-    if (controller != nil &&
-        [controller respondsToSelector:selector]) {
-        ((void (*)(id, SEL, NSUInteger))objc_msgSend)(
-            controller,
-            selector,
-            level
-        );
+static void LanternReapplyLevel(NSUInteger level)
+{
+    id flashlight = LanternFlashlight();
+    SEL sel = NSSelectorFromString(@"setLevel:");
+    if (flashlight && [flashlight respondsToSelector:sel]) {
+        ((void (*)(id, SEL, NSUInteger))objc_msgSend)(flashlight, sel, level);
     }
 }
 
-@interface LanternModuleViewController :
-    CCUISliderButtonModuleViewController
-@property(nonatomic, strong) id flashlight;
-@end
-
-@implementation LanternModuleViewController
-
-- (instancetype)init
+static void LanternSetSelected(id self, BOOL selected)
 {
-    self = [super initWithNibName:nil bundle:nil];
+    SEL sel = NSSelectorFromString(@"setSelected:");
+    if ([self respondsToSelector:sel]) {
+        ((void (*)(id, SEL, BOOL))objc_msgSend)(self, sel, selected);
+    }
+}
 
-    if (self) {
-        _flashlight = LanternFlashlightController();
+static void LanternButtonTapped(id self, SEL cmd, id sender, id event)
+{
+    NSUInteger level = LanternLevel();
 
-        [self setTitle:@"Lantern"];
-
-        [self setGlyphImage:
-            [UIImage systemImageNamed:@"flashlight.off.fill"]];
-
-        [self setSelectedGlyphImage:
-            [UIImage systemImageNamed:@"flashlight.on.fill"]];
-
-        [self setSelectedGlyphColor:
-            [UIColor systemYellowColor]];
+    if (level > 0 && LanternIsWarm()) {
+        if (gAppleButtonTapped)
+            ((void (*)(id, SEL, id, id))gAppleButtonTapped)(self, cmd, sender, event);
+        LanternSetWarm(NO);
+        return;
     }
 
-    return self;
+    if (level > 0) {
+        if (LanternSetWarm(YES)) LanternReapplyLevel(level);
+        LanternSetSelected(self, YES);
+        return;
+    }
+
+    if (!LanternSetWarm(YES)) return;
+    if (gAppleButtonTapped)
+        ((void (*)(id, SEL, id, id))gAppleButtonTapped)(self, cmd, sender, event);
+    if (LanternLevel() == 0) LanternSetWarm(NO);
 }
 
-- (id)createSliderView
+static void LanternSliderChanged(id self, SEL cmd, id sender)
 {
-    Class sliderClass =
-        NSClassFromString(@"CCUISteppedSliderView");
+    SEL stepSel = NSSelectorFromString(@"step");
+    NSUInteger step = [sender respondsToSelector:stepSel]
+        ? ((NSUInteger (*)(id, SEL))objc_msgSend)(sender, stepSel)
+        : 0;
 
-    if (sliderClass == Nil)
-        return [super createSliderView];
-
-    return [[sliderClass alloc]
-        initWithFrame:self.view.bounds];
+    LanternSetWarm(step > 0);
+    if (gAppleSliderChanged)
+        ((void (*)(id, SEL, id))gAppleSliderChanged)(self, cmd, sender);
 }
 
-- (void)viewDidLoad
+static void LanternUpdateControls(id self, SEL cmd)
 {
-    [super viewDidLoad];
+    if (gAppleUpdateControls)
+        ((void (*)(id, SEL))gAppleUpdateControls)(self, cmd);
 
-    CCUISteppedSliderView *slider =
-        (CCUISteppedSliderView *)[self sliderView];
-
-    [slider setNumberOfSteps:5];
-    [slider setFirstStepIsOff:YES];
-
-    [slider addTarget:self
-               action:@selector(lanternSliderValueDidChange:)
-     forControlEvents:(UIControlEvents)4096];
-
-    [self lanternUpdateControls];
+    LanternSetSelected(self, LanternIsWarm() && LanternLevel() > 0);
 }
 
-- (void)viewWillAppear:(BOOL)animated
+static Class LanternControllerClass(void)
 {
-    [super viewWillAppear:animated];
-    [self lanternUpdateControls];
-}
+    static Class cls = Nil;
+    static dispatch_once_t onceToken;
 
-- (void)viewWillLayoutSubviews
-{
-    [super viewWillLayoutSubviews];
-    [self lanternUpdateSliderValue];
-}
+    dispatch_once(&onceToken, ^{
+        dlopen("/System/Library/ControlCenter/Bundles/FlashlightModule.bundle/FlashlightModule",
+               RTLD_NOW | RTLD_GLOBAL);
 
-- (BOOL)_canShowWhileLocked
-{
-    return YES;
-}
+        Class apple = NSClassFromString(@"CCUIFlashlightModuleViewController");
+        if (!apple) return;
 
-- (BOOL)shouldBeginTransitionToExpandedContentModule
-{
-    return LanternFlashlightAvailable(self.flashlight);
-}
+        Method button = class_getInstanceMethod(apple, NSSelectorFromString(@"buttonTapped:forEvent:"));
+        Method slider = class_getInstanceMethod(apple, NSSelectorFromString(@"_sliderValueDidChange:"));
+        Method update = class_getInstanceMethod(apple, NSSelectorFromString(@"_updateControls"));
+        if (!button || !slider || !update) return;
 
-- (BOOL)shouldFinishTransitionToExpandedContentModule
-{
-    return LanternFlashlightAvailable(self.flashlight);
-}
+        gAppleButtonTapped = method_getImplementation(button);
+        gAppleSliderChanged = method_getImplementation(slider);
+        gAppleUpdateControls = method_getImplementation(update);
 
-- (void)buttonTapped:(id)sender forEvent:(id)event
-{
-    BOOL selected =
-        LanternFlashlightAvailable(self.flashlight) &&
-        ![self isSelected];
-
-    [self setSelected:selected];
-
-    if (selected) {
-        if (!LanternSetWarmState(YES)) {
-            [self setSelected:NO];
+        cls = objc_allocateClassPair(apple, "LanternNativeFlashlightViewController", 0);
+        if (!cls) {
+            cls = NSClassFromString(@"LanternNativeFlashlightViewController");
             return;
         }
 
-        SEL selector =
-            NSSelectorFromString(
-                @"turnFlashlightOnForReason:"
-            );
+        class_addMethod(cls, NSSelectorFromString(@"buttonTapped:forEvent:"),
+                        (IMP)LanternButtonTapped, method_getTypeEncoding(button));
+        class_addMethod(cls, NSSelectorFromString(@"_sliderValueDidChange:"),
+                        (IMP)LanternSliderChanged, method_getTypeEncoding(slider));
+        class_addMethod(cls, NSSelectorFromString(@"_updateControls"),
+                        (IMP)LanternUpdateControls, method_getTypeEncoding(update));
+        objc_registerClassPair(cls);
+    });
 
-        if ([self.flashlight respondsToSelector:selector]) {
-            ((void (*)(id, SEL, id))objc_msgSend)(
-                self.flashlight,
-                selector,
-                @"Control Center"
-            );
-        }
-        else {
-            LanternSetWarmState(NO);
-            [self setSelected:NO];
-        }
-    }
-    else {
-        SEL selector =
-            NSSelectorFromString(
-                @"turnFlashlightOffForReason:"
-            );
-
-        if ([self.flashlight respondsToSelector:selector]) {
-            ((void (*)(id, SEL, id))objc_msgSend)(
-                self.flashlight,
-                selector,
-                @"Control Center"
-            );
-        }
-
-        LanternSetWarmState(NO);
-    }
-
-    [self lanternUpdateControls];
+    return cls;
 }
 
-- (void)lanternSliderValueDidChange:(id)sender
+static UIViewController *LanternCreateController(void)
 {
-    NSUInteger step =
-        [(CCUISteppedSliderView *)sender step];
+    Class cls = LanternControllerClass();
+    if (!cls) return nil;
 
-    if (step > 0) {
-        LanternSetWarmState(YES);
-    }
+    UIViewController *controller = [[cls alloc] initWithNibName:nil bundle:nil];
+    if (!controller) return nil;
 
-    LanternSetFlashlightLevel(self.flashlight, step);
+    SEL titleSel = NSSelectorFromString(@"setTitle:");
+    SEL glyphSel = NSSelectorFromString(@"setGlyphImage:");
+    SEL selectedGlyphSel = NSSelectorFromString(@"setSelectedGlyphImage:");
+    SEL colorSel = NSSelectorFromString(@"setSelectedGlyphColor:");
 
-    if (step == 0) {
-        LanternSetWarmState(NO);
-    }
+    if ([controller respondsToSelector:titleSel])
+        ((void (*)(id, SEL, id))objc_msgSend)(controller, titleSel, @"Lantern");
+    if ([controller respondsToSelector:glyphSel])
+        ((void (*)(id, SEL, id))objc_msgSend)(controller, glyphSel,
+            [UIImage systemImageNamed:@"flashlight.off.fill"]);
+    if ([controller respondsToSelector:selectedGlyphSel])
+        ((void (*)(id, SEL, id))objc_msgSend)(controller, selectedGlyphSel,
+            [UIImage systemImageNamed:@"flashlight.on.fill"]);
+    if ([controller respondsToSelector:colorSel])
+        ((void (*)(id, SEL, id))objc_msgSend)(controller, colorSel,
+            [UIColor systemYellowColor]);
 
-    [self lanternUpdateControls];
+    return controller;
 }
-
-- (void)lanternUpdateSliderValue
-{
-    if (![self isExpanded])
-        return;
-
-    CCUISteppedSliderView *slider =
-        (CCUISteppedSliderView *)[self sliderView];
-
-    NSUInteger level =
-        LanternFlashlightLevel(self.flashlight);
-
-    NSUInteger step =
-        (level >= 1 && level <= 4)
-            ? level + 1
-            : 1;
-
-    [slider setStep:step];
-}
-
-- (void)lanternUpdateControls
-{
-    BOOL available =
-        LanternFlashlightAvailable(self.flashlight);
-
-    NSUInteger level =
-        LanternFlashlightLevel(self.flashlight);
-
-    id button = [self buttonView];
-    SEL enabledSelector =
-        NSSelectorFromString(@"setEnabled:");
-
-    if ([button respondsToSelector:enabledSelector]) {
-        ((void (*)(id, SEL, BOOL))objc_msgSend)(
-            button,
-            enabledSelector,
-            available
-        );
-    }
-
-    id slider = [self sliderView];
-
-    if ([slider respondsToSelector:enabledSelector]) {
-        ((void (*)(id, SEL, BOOL))objc_msgSend)(
-            slider,
-            enabledSelector,
-            available
-        );
-    }
-
-    [self setSelected:(available && level != 0)];
-    [self lanternUpdateSliderValue];
-}
-
-- (void)flashlightLevelDidChange:(NSUInteger)level
-{
-    [self lanternUpdateControls];
-}
-
-- (void)flashlightAvailabilityDidChange:(BOOL)available
-{
-    [self lanternUpdateControls];
-}
-
-@end
 
 @interface LanternModule : NSObject <CCUIContentModule>
-@property(nonatomic, strong) LanternModuleViewController *viewController;
+@property(nonatomic, strong) UIViewController *viewController;
 @end
 
 @implementation LanternModule
@@ -407,13 +216,8 @@ static void LanternSetFlashlightLevel(
 
 - (UIViewController *)contentViewControllerForContext:(id)context
 {
-    LanternModuleViewController *controller =
-        [[LanternModuleViewController alloc] init];
-
-    if (self.viewController == nil) {
-        self.viewController = controller;
-    }
-
+    UIViewController *controller = LanternCreateController();
+    if (self.viewController == nil) self.viewController = controller;
     return controller;
 }
 
