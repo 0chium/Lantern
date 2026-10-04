@@ -400,18 +400,6 @@ static void LanternSetFlashlightLevel(
 
 @implementation LanternModule
 
-- (instancetype)init
-{
-    self = [super init];
-
-    if (self) {
-        _viewController =
-            [[LanternModuleViewController alloc] init];
-    }
-
-    return self;
-}
-
 - (UIViewController *)contentViewController
 {
     return self.viewController;
