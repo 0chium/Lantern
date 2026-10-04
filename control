@@ -1,6 +1,6 @@
 Package: com.ochium.lantern
 Name: Lantern
-Version: 0.0.1
+Version: 0.0.1-2
 Architecture: iphoneos-arm64
 Description: Native warm flashlight control for iOS 18.2.
 Maintainer: ochium
