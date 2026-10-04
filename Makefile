@@ -23,6 +23,7 @@ BUNDLE_NAME = LanternModule
 
 LanternModule_FILES = LanternModule.mm
 LanternModule_CFLAGS = -fobjc-arc
+LanternModule_LDFLAGS = -Wl,-undefined,dynamic_lookup
 LanternModule_FRAMEWORKS = UIKit
 LanternModule_INSTALL_PATH = /Library/ControlCenter/Bundles
 
