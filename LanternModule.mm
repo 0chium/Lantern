@@ -144,8 +144,7 @@ static void LanternButtonTapped(id self, SEL cmd, id sender, id event)
     NSUInteger level = LanternLevel();
 
     if (level > 0 && LanternIsWarm()) {
-        if (gAppleButtonTapped)
-            ((void (*)(id, SEL, id, id))gAppleButtonTapped)(self, cmd, sender, event);
+        LanternReapplyLevel(0);
         LanternSetWarm(NO);
         return;
     }
@@ -171,7 +170,7 @@ static void LanternSliderChanged(id self, SEL cmd, id sender)
         ? ((NSUInteger (*)(id, SEL))objc_msgSend)(sender, stepSel)
         : 0;
 
-    LanternSetWarm(step > 0);
+    LanternSetWarm(step > 1);
     if (gAppleSliderChanged)
         ((void (*)(id, SEL, id))gAppleSliderChanged)(self, cmd, sender);
 }
@@ -180,8 +179,6 @@ static void LanternUpdateControls(id self, SEL cmd)
 {
     if (gAppleUpdateControls)
         ((void (*)(id, SEL))gAppleUpdateControls)(self, cmd);
-
-    LanternSetSelected(self, LanternIsWarm() && LanternLevel() > 0);
 }
 
 static Class LanternControllerClass(void)
