@@ -176,7 +176,8 @@ static void LanternSliderForMode(id self, SEL cmd, id sender, BOOL warm)
         LanternSelectMode(NO);
     } else if (wasOff) {
         if (LanternSelectMode(pending ? pendingWarm : warm))
-            LanternSchedule(^{ ((void (*)(id, SEL, id))gAppleSlider)(self, cmd, sender); });
+            // Consume this event before refresh can reset the live sender to off.
+            ((void (*)(id, SEL, id))gAppleSlider)(self, cmd, sender);
         else LanternNativeOff();
     } else {
         ((void (*)(id, SEL, id))gAppleSlider)(self, cmd, sender);
