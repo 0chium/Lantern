@@ -167,20 +167,15 @@ static void LanternSliderForMode(id self, SEL cmd, id sender, BOOL warm)
         return;
     }
     NSUInteger step = ((NSUInteger (*)(id, SEL))objc_msgSend)(sender, NSSelectorFromString(@"step"));
-    BOOL wasOff = LanternLevel() == 0;
-    BOOL pendingWarm = gWarm;
-    BOOL pending = gPendingTimer != nil;
     LanternCancelPending();
     if (step <= 1) {
         ((void (*)(id, SEL, id))gAppleSlider)(self, cmd, sender);
         LanternSelectMode(NO);
-    } else if (wasOff) {
-        if (LanternSelectMode(pending ? pendingWarm : warm))
+    } else {
+        if (LanternSelectMode(warm))
             // Consume this event before refresh can reset the live sender to off.
             ((void (*)(id, SEL, id))gAppleSlider)(self, cmd, sender);
         else LanternNativeOff();
-    } else {
-        ((void (*)(id, SEL, id))gAppleSlider)(self, cmd, sender);
     }
     LanternRefresh();
 }
