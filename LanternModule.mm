@@ -206,6 +206,7 @@ static void LanternUpdateControls(id self, SEL cmd)
 
 @interface LanternLevelObserver : NSObject
 - (void)flashlightLevelDidChange:(NSUInteger)level;
+- (void)flashlightAvailabilityDidChange:(BOOL)available;
 @end
 @implementation LanternLevelObserver
 - (void)flashlightLevelDidChange:(NSUInteger)level
@@ -213,6 +214,13 @@ static void LanternUpdateControls(id self, SEL cmd)
     // Native callback is main-thread UI work; defer reset beyond Apple's setter.
     dispatch_async(dispatch_get_main_queue(), ^{
         if (LanternLevel() == 0 && !gPendingTimer) LanternSelectMode(NO);
+        LanternRefresh();
+    });
+}
+
+- (void)flashlightAvailabilityDidChange:(BOOL)available
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
         LanternRefresh();
     });
 }
