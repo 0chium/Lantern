@@ -1,0 +1,91 @@
+name: Bug report
+description: Report unexpected Lantern behavior or a crash.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check the README's tested environment and known limitation first.
+        For crashes, Safe Mode, SpringBoard crashes or reboots, attach the ORIGINAL .ips/crash/panic report when available, not only a screenshot. Do not deliberately reproduce a crash to obtain a report.
+        Reports are public. Review attachments for private information; do not include credentials, Apple ID details or a full sysdiagnose. If you cannot share a report safely, say that it is available instead.
+  - type: input
+    id: lantern-version
+    attributes:
+      label: Lantern version
+      placeholder: "0.1.2"
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device model
+      placeholder: "iPhone SE (2nd generation), iPhone12,8 if known"
+    validations:
+      required: true
+  - type: input
+    id: ios
+    attributes:
+      label: iOS version and build
+      description: Include the build number if known.
+      placeholder: "iOS 18.2 / 22C152"
+    validations:
+      required: true
+  - type: input
+    id: jailbreak
+    attributes:
+      label: Jailbreak and version
+      placeholder: "Dopamine 3.0.10, rootless"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Briefly describe what happened.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Exact interaction or reproduction steps
+      description: Include starting mode, brightness and whether you tapped a tile or used an expanded slider. If unknown, say so; do not guess or deliberately repeat a crash.
+    validations:
+      required: true
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Does it happen consistently?
+      options:
+        - Every time in ordinary use
+        - Sometimes
+        - Observed once
+        - Unknown or not repeated
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include physical light color/output and tile selection when relevant. For a crash, include its approximate time if known.
+    validations:
+      required: true
+  - type: textarea
+    id: relevant-tweaks
+    attributes:
+      label: Relevant tweaks or recent changes
+      description: If applicable, list recently installed/updated Control Center, flashlight, camera or injection-related tweaks. Include the CCSupport version if known; no full installed-package list is required.
+    validations:
+      required: false
+  - type: textarea
+    id: reports
+    attributes:
+      label: Original crash/panic report and additional information
+      description: Attach the original report here if available and safe to share. Other useful attachments or context are optional; screenshots alone do not replace a crash report.
+    validations:
+      required: false
