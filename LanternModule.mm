@@ -323,6 +323,11 @@ static UIViewController *LanternCreateController(void)
 static Class gLanternBackgroundClass;
 static UIImage *gLanternHeaderOff, *gLanternHeaderOn;
 
+static BOOL LanternBackgroundCanShowWhileLocked(id self, SEL cmd)
+{
+    return YES;
+}
+
 static void LanternBackgroundUpdate(id self, SEL cmd)
 {
     if (![NSThread isMainThread]) return;
@@ -345,14 +350,16 @@ static UIViewController *LanternCreateBackground(void)
     dispatch_once(&once, ^{
         Class base = NSClassFromString(@"CCUISliderModuleBackgroundViewController");
         if (!base || !LanternMethodMatches(base, @"setHeaderGlyphImage:unscaledSymbolPointSize:", "v32@0:8@16d24") ||
-            !LanternMethodMatches(base, @"viewWillAppear:", "v20@0:8B16")) return;
+            !LanternMethodMatches(base, @"viewWillAppear:", "v20@0:8B16") ||
+            !LanternMethodMatches(base, @"_canShowWhileLocked", "B16@0:8")) return;
         UIImage *off = [UIImage systemImageNamed:@"light.beacon.min"];
         UIImage *on = [UIImage systemImageNamed:@"light.beacon.min.fill"];
         if (!off || !on) return;
         Class cls = objc_allocateClassPair(base, "LanternHeaderBackgroundViewController", 0);
         if (!cls) return;
         if (!class_addMethod(cls, NSSelectorFromString(@"_updateControls"), (IMP)LanternBackgroundUpdate, "v16@0:8") ||
-            !class_addMethod(cls, NSSelectorFromString(@"viewWillAppear:"), (IMP)LanternBackgroundWillAppear, "v20@0:8B16")) {
+            !class_addMethod(cls, NSSelectorFromString(@"viewWillAppear:"), (IMP)LanternBackgroundWillAppear, "v20@0:8B16") ||
+            !class_addMethod(cls, NSSelectorFromString(@"_canShowWhileLocked"), (IMP)LanternBackgroundCanShowWhileLocked, "B16@0:8")) {
             objc_disposeClassPair(cls); return;
         }
         gLanternHeaderOff = [off imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
