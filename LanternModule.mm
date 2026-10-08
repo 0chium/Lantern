@@ -292,6 +292,15 @@ static Class LanternControllerClass(void)
     return gActive ? gLanternControllerClass : Nil;
 }
 
+static UIImage *LanternCustomGlyph(BOOL selected)
+{
+    NSBundle *bundle = [NSBundle bundleForClass:NSClassFromString(@"LanternModule")];
+    UIImage *image = [UIImage imageNamed:selected ? @"LanternCustom-on" : @"LanternCustom-off"
+        inBundle:bundle compatibleWithTraitCollection:nil];
+    if (!image) image = [UIImage systemImageNamed:selected ? @"light.beacon.min.fill" : @"light.beacon.min"];
+    return [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+}
+
 static UIViewController *LanternCreateController(void)
 {
     Class cls = LanternControllerClass();
@@ -309,10 +318,10 @@ static UIViewController *LanternCreateController(void)
         ((void (*)(id, SEL, id))objc_msgSend)(controller, titleSel, @"Lantern");
     if ([controller respondsToSelector:glyphSel])
         ((void (*)(id, SEL, id))objc_msgSend)(controller, glyphSel,
-            [UIImage systemImageNamed:@"light.beacon.min"]);
+            LanternCustomGlyph(NO));
     if ([controller respondsToSelector:selectedGlyphSel])
         ((void (*)(id, SEL, id))objc_msgSend)(controller, selectedGlyphSel,
-            [UIImage systemImageNamed:@"light.beacon.min.fill"]);
+            LanternCustomGlyph(YES));
     if ([controller respondsToSelector:colorSel])
         ((void (*)(id, SEL, id))objc_msgSend)(controller, colorSel,
             [UIColor systemYellowColor]);
@@ -352,8 +361,8 @@ static UIViewController *LanternCreateBackground(void)
         if (!base || !LanternMethodMatches(base, @"setHeaderGlyphImage:unscaledSymbolPointSize:", "v32@0:8@16d24") ||
             !LanternMethodMatches(base, @"viewWillAppear:", "v20@0:8B16") ||
             !LanternMethodMatches(base, @"_canShowWhileLocked", "B16@0:8")) return;
-        UIImage *off = [UIImage systemImageNamed:@"light.beacon.min"];
-        UIImage *on = [UIImage systemImageNamed:@"light.beacon.min.fill"];
+        UIImage *off = LanternCustomGlyph(NO);
+        UIImage *on = LanternCustomGlyph(YES);
         if (!off || !on) return;
         Class cls = objc_allocateClassPair(base, "LanternHeaderBackgroundViewController", 0);
         if (!cls) return;
