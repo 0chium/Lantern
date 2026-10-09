@@ -1,5 +1,6 @@
 Origin: Lantern
 Label: Lantern
+Components: main
 Architectures: iphoneos-arm64
 Description: Lantern rootless packages
 Date: Fri, 09 Oct 2026 04:40:13 GMT
