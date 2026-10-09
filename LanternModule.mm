@@ -372,7 +372,10 @@ static UIViewController *LanternCreateBackground(void)
             objc_disposeClassPair(cls); return;
         }
         gLanternHeaderOff = [off imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-        gLanternHeaderOn = [on imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        NSBundle *bundle = [NSBundle bundleForClass:NSClassFromString(@"LanternModule")];
+        UIImage *headerOn = [UIImage imageNamed:@"LanternHeader-on" inBundle:bundle compatibleWithTraitCollection:nil];
+        gLanternHeaderOn = headerOn ? [headerOn imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
+            : [on imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         gLanternBackgroundClass = cls;
         objc_registerClassPair(cls);
     });
