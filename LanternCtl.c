@@ -81,6 +81,12 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    if (argc == 2 && strcmp(argv[1], "diagnostic-export") == 0) {
+        uint32_t status=notifyPost("com.ochium.lantern.diagnostic.build51.state.export.v1");
+        notifyCancel(token);
+        printf("Diagnostic export request status: %u (not completion)\n",status);
+        return status==0 ? 0 : 1;
+    }
     if (argc == 2 && strcmp(argv[1], "on") == 0) {
 
         if (notifySetState(token, 1) != 0) {

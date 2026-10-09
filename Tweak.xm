@@ -5,6 +5,8 @@
 #include <notify.h>
 #include <dispatch/dispatch.h>
 #include <atomic>
+#define LD_PROCESS "cameracaptured"
+#include "LanternDiagnostic.h"
 
 // Preserve observed x0 status bits; semantic C++ return typedef is unpublished.
 typedef uint64_t (*LanternSetIndividualTorchLEDLevelsFunction)(void *, unsigned int, unsigned int);
@@ -37,24 +39,35 @@ static uint64_t LanternSetIndividualTorchLEDLevels(void *device, unsigned int ar
 {
     // A guard avoids a NULL call; it cannot undo a patched/no-original failure.
     if (!originalSetIndividualTorchLEDLevels) return UINT64_MAX;
-    if (levels == 0) return originalSetIndividualTorchLEDLevels(device, arg1, levels);
+    LDGuard diagnosticHardware;
+    LDLog(60,device,arg1,levels,gLanternWarm.load(std::memory_order_acquire));
+    if (levels == 0) {
+        uint64_t result=originalSetIndividualTorchLEDLevels(device,arg1,levels);
+        LDLog(61,device,result,levels); return result;
+    }
     uint32_t finalLevels = levels;
     if (gLanternWarm.load(std::memory_order_acquire) && LanternCanTransform(levels))
         finalLevels = LanternWarmLevels(levels);
-    return originalSetIndividualTorchLEDLevels(device, arg1, finalLevels);
+    LDLog(62,device,finalLevels);
+    uint64_t result=originalSetIndividualTorchLEDLevels(device,arg1,finalLevels);
+    LDLog(61,device,result,finalLevels); return result;
 }
 
 __attribute__((constructor))
 static void LanternLoaded(void)
 {
+    LDInit();
     LanternNotifyDispatchFunction reg = (LanternNotifyDispatchFunction)dlsym(RTLD_DEFAULT, "notify_register_dispatch");
     LanternNotifyGetStateFunction get = (LanternNotifyGetStateFunction)dlsym(RTLD_DEFAULT, "notify_get_state");
     if (!reg || !get) return;
     int token = -1;
     dispatch_queue_t queue = dispatch_queue_create("com.ochium.lantern.mode", DISPATCH_QUEUE_SERIAL);
     if (reg(kLanternStateNotification, &token, queue, ^(int deliveredToken) {
+        LDGuard diagnosticConsume;
         uint64_t state = 0;
-        bool warm = get(deliveredToken, &state) == 0 && state == 1;
+        uint32_t status=get(deliveredToken,&state);
+        bool warm = status == 0 && state == 1;
+        LDLog(25,NULL,state,status,warm);
         gLanternWarm.store(warm, std::memory_order_release);
     }) != 0) return;
     // Do not import stale notify state at startup: new process starts WHITE.
