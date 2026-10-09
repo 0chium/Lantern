@@ -261,37 +261,49 @@ static BOOL LanternMethodMatches(Class cls, NSString *name, const char *types)
 
 
 // Temporary diagnostic wrappers: exact encoding guard; no raw branch hooks.
-static IMP LDNativeLevel, LDNativeCore, LDNativeAV;
+static_assert(ATOMIC_POINTER_LOCK_FREE == 2, "Diagnostic IMP storage must be lock-free");
+static std::atomic<IMP> LDNativeLevel{nullptr}, LDNativeCore{nullptr}, LDNativeAV{nullptr};
 static void LDSetLevel(id self,SEL cmd,NSUInteger level) {
     LDGuard scope; LDLog(30,(__bridge const void *)self,level);
-    ((void(*)(id,SEL,NSUInteger))LDNativeLevel)(self,cmd,level);
+    IMP original = LDNativeLevel.load(std::memory_order_acquire);
+    ((void(*)(id,SEL,NSUInteger))original)(self,cmd,level);
     LDLog(31,(__bridge const void *)self,LDFloatBits(((float(*)(id,SEL))objc_msgSend)(self,NSSelectorFromString(@"intensity"))));
 }
 static void LDSetCore(id self,SEL cmd,double intensity,double width,BOOL animated,NSUInteger power) {
     LDGuard scope; LDLog(32,(__bridge const void *)self,LDBits(intensity),LDBits(width),animated,power);
-    ((void(*)(id,SEL,double,double,BOOL,NSUInteger))LDNativeCore)(self,cmd,intensity,width,animated,power);
+    IMP original = LDNativeCore.load(std::memory_order_acquire);
+    ((void(*)(id,SEL,double,double,BOOL,NSUInteger))original)(self,cmd,intensity,width,animated,power);
     LDLog(33,(__bridge const void *)self,LDFloatBits(((float(*)(id,SEL))objc_msgSend)(self,NSSelectorFromString(@"intensity"))));
 }
 static BOOL LDSetAV(id self,SEL cmd,float intensity,id *error) {
     LDGuard scope; LDLog(34,(__bridge const void *)self,LDFloatBits(intensity));
-    BOOL result=((BOOL(*)(id,SEL,float,id *))LDNativeAV)(self,cmd,intensity,error);
+    IMP original = LDNativeAV.load(std::memory_order_acquire);
+    BOOL result=((BOOL(*)(id,SEL,float,id *))original)(self,cmd,intensity,error);
     LDLog(35,(__bridge const void *)self,result); return result;
+}
+static BOOL LDValidOriginal(IMP original) {
+    return original && original != (IMP)LDSetLevel && original != (IMP)LDSetCore && original != (IMP)LDSetAV;
+}
+static BOOL LDInstallHook(Class cls, NSString *name, const char *types, IMP replacement, std::atomic<IMP> &slot) {
+    if (!LanternMethodMatches(cls, name, types) || !slot.is_lock_free()) return NO;
+    SEL selector = NSSelectorFromString(name);
+    IMP before = method_getImplementation(class_getInstanceMethod(cls, selector));
+    if (!LDValidOriginal(before)) return NO;
+    // Publish a callable fallback before the backend can expose our wrapper.
+    slot.store(before, std::memory_order_release);
+    IMP captured = NULL;
+    MSHookMessageEx(cls, selector, replacement, &captured);
+    if (!LDValidOriginal(captured)) return NO; // Keep fallback; this probe is not validated.
+    slot.store(captured, std::memory_order_release);
+    // A changed chain during installation is not a validated diagnostic probe.
+    return captured == before && class_getMethodImplementation(cls, selector) == replacement;
 }
 static void LDInstall(void) {
     LDInit();
     Class sb=NSClassFromString(@"SBUIFlashlightController"), av=NSClassFromString(@"AVFlashlight");
-    if(LanternMethodMatches(sb,@"setLevel:","v24@0:8Q16")) {
-        MSHookMessageEx(sb,NSSelectorFromString(@"setLevel:"),(IMP)LDSetLevel,&LDNativeLevel);
-        LDLog(2,NULL,30,LDNativeLevel!=NULL);
-    } else LDLog(2,NULL,30,0);
-    if(LanternMethodMatches(sb,@"_setIntensity:width:animated:withPowerChange:","v44@0:8d16d24B32Q36")) {
-        MSHookMessageEx(sb,NSSelectorFromString(@"_setIntensity:width:animated:withPowerChange:"),(IMP)LDSetCore,&LDNativeCore);
-        LDLog(2,NULL,32,LDNativeCore!=NULL);
-    } else LDLog(2,NULL,32,0);
-    if(LanternMethodMatches(av,@"setFlashlightLevel:withError:","B28@0:8f16^@20")) {
-        MSHookMessageEx(av,NSSelectorFromString(@"setFlashlightLevel:withError:"),(IMP)LDSetAV,&LDNativeAV);
-        LDLog(2,NULL,34,LDNativeAV!=NULL);
-    } else LDLog(2,NULL,34,0);
+    LDLog(2,NULL,30,LDInstallHook(sb,@"setLevel:","v24@0:8Q16",(IMP)LDSetLevel,LDNativeLevel));
+    LDLog(2,NULL,32,LDInstallHook(sb,@"_setIntensity:width:animated:withPowerChange:","v44@0:8d16d24B32Q36",(IMP)LDSetCore,LDNativeCore));
+    LDLog(2,NULL,34,LDInstallHook(av,@"setFlashlightLevel:withError:","B28@0:8f16^@20",(IMP)LDSetAV,LDNativeAV));
 }
 
 static Class LanternControllerClass(void)
