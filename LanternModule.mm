@@ -292,6 +292,15 @@ static Class LanternControllerClass(void)
     return gActive ? gLanternControllerClass : Nil;
 }
 
+static UIImage *LanternCustomGlyph(BOOL selected)
+{
+    NSBundle *bundle = [NSBundle bundleForClass:NSClassFromString(@"LanternModule")];
+    UIImage *image = [UIImage imageNamed:selected ? @"LanternCustom-on" : @"LanternCustom-off"
+        inBundle:bundle compatibleWithTraitCollection:nil];
+    if (!image) image = [UIImage systemImageNamed:selected ? @"light.beacon.min.fill" : @"light.beacon.min"];
+    return [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+}
+
 static UIViewController *LanternCreateController(void)
 {
     Class cls = LanternControllerClass();
@@ -309,10 +318,10 @@ static UIViewController *LanternCreateController(void)
         ((void (*)(id, SEL, id))objc_msgSend)(controller, titleSel, @"Lantern");
     if ([controller respondsToSelector:glyphSel])
         ((void (*)(id, SEL, id))objc_msgSend)(controller, glyphSel,
-            [UIImage systemImageNamed:@"light.beacon.min"]);
+            LanternCustomGlyph(NO));
     if ([controller respondsToSelector:selectedGlyphSel])
         ((void (*)(id, SEL, id))objc_msgSend)(controller, selectedGlyphSel,
-            [UIImage systemImageNamed:@"light.beacon.min.fill"]);
+            LanternCustomGlyph(YES));
     if ([controller respondsToSelector:colorSel])
         ((void (*)(id, SEL, id))objc_msgSend)(controller, colorSel,
             [UIColor systemYellowColor]);
@@ -320,8 +329,68 @@ static UIViewController *LanternCreateController(void)
     return controller;
 }
 
+static Class gLanternBackgroundClass;
+static UIImage *gLanternHeaderOff, *gLanternHeaderOn;
+
+static BOOL LanternBackgroundCanShowWhileLocked(id self, SEL cmd)
+{
+    return YES;
+}
+
+static void LanternBackgroundUpdate(id self, SEL cmd)
+{
+    if (![NSThread isMainThread]) return;
+    BOOL selected = gActive && LanternAvailable() && LanternLevel() > 0 && gWarm;
+    ((void (*)(id, SEL, id, double))objc_msgSend)(self, NSSelectorFromString(@"setHeaderGlyphImage:unscaledSymbolPointSize:"),
+        selected ? gLanternHeaderOn : gLanternHeaderOff, 30.0);
+}
+
+static void LanternBackgroundWillAppear(id self, SEL cmd, BOOL animated)
+{
+    struct objc_super parent = { self, class_getSuperclass(gLanternBackgroundClass) };
+    ((void (*)(struct objc_super *, SEL, BOOL))objc_msgSendSuper)(&parent, cmd, animated);
+    LanternBackgroundUpdate(self, NSSelectorFromString(@"_updateControls"));
+}
+
+static UIViewController *LanternCreateBackground(void)
+{
+    if (![NSThread isMainThread] || !LanternControllerClass()) return nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        Class base = NSClassFromString(@"CCUISliderModuleBackgroundViewController");
+        if (!base || !LanternMethodMatches(base, @"setHeaderGlyphImage:unscaledSymbolPointSize:", "v32@0:8@16d24") ||
+            !LanternMethodMatches(base, @"viewWillAppear:", "v20@0:8B16") ||
+            !LanternMethodMatches(base, @"_canShowWhileLocked", "B16@0:8")) return;
+        UIImage *off = LanternCustomGlyph(NO);
+        UIImage *on = LanternCustomGlyph(YES);
+        if (!off || !on) return;
+        Class cls = objc_allocateClassPair(base, "LanternHeaderBackgroundViewController", 0);
+        if (!cls) return;
+        if (!class_addMethod(cls, NSSelectorFromString(@"_updateControls"), (IMP)LanternBackgroundUpdate, "v16@0:8") ||
+            !class_addMethod(cls, NSSelectorFromString(@"viewWillAppear:"), (IMP)LanternBackgroundWillAppear, "v20@0:8B16") ||
+            !class_addMethod(cls, NSSelectorFromString(@"_canShowWhileLocked"), (IMP)LanternBackgroundCanShowWhileLocked, "B16@0:8")) {
+            objc_disposeClassPair(cls); return;
+        }
+        gLanternHeaderOff = [off imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        NSBundle *bundle = [NSBundle bundleForClass:NSClassFromString(@"LanternModule")];
+        UIImage *headerOn = [UIImage imageNamed:@"LanternHeader-on" inBundle:bundle compatibleWithTraitCollection:nil];
+        gLanternHeaderOn = headerOn ? [headerOn imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
+            : [on imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        gLanternBackgroundClass = cls;
+        objc_registerClassPair(cls);
+    });
+    if (!gLanternBackgroundClass) return nil;
+    UIViewController *background = [[gLanternBackgroundClass alloc] initWithNibName:nil bundle:nil];
+    if (background) {
+        [gControls addObject:background];
+        LanternBackgroundUpdate(background, NSSelectorFromString(@"_updateControls"));
+    }
+    return background;
+}
+
 @interface LanternModule : NSObject <CCUIContentModule>
 @property(nonatomic, strong) UIViewController *viewController;
+@property(nonatomic, strong) UIViewController *headerController;
 @end
 
 @implementation LanternModule
@@ -336,6 +405,18 @@ static UIViewController *LanternCreateController(void)
     UIViewController *controller = LanternCreateController();
     if (self.viewController == nil) self.viewController = controller;
     return controller;
+}
+
+- (UIViewController *)backgroundViewController
+{
+    return self.headerController;
+}
+
+- (UIViewController *)backgroundViewControllerForContext:(id)context
+{
+    UIViewController *background = LanternCreateBackground();
+    if (self.headerController == nil) self.headerController = background;
+    return background;
 }
 
 - (BOOL)expandsGridSizeClassesForAccessibility

@@ -1,54 +1,58 @@
-# Lantern
+# Lantern 0.1.2-1
 
-Warm flashlight mode for iOS 18 Control Center, designed to preserve native iOS behavior.
+![Lantern ON presentation](https://0chium.github.io/Lantern/assets/Lantern-public-on.png)
 
-## About
+*Standalone accepted Build #51 ON header artwork, with transparent square padding.*
 
-Lantern adds a separate warm/yellow flashlight control alongside the stock white flashlight. It preserves Apple's native intensity controls and Control Center experience, with mutually exclusive selection between the two modes.
+Warm/yellow flashlight control for iOS Control Center, with Apple's native expanded intensity slider and a custom lantern illustration.
 
-## Tested environment
+## Supported environment
 
-- iPhone SE (2nd generation), iPhone12,8, arm64e
-- iOS 18.2, build 22C152
-- Dopamine 3.0.10 rootless
-- CCSupport 1.3.13-3~ios18fix1
+Verified on iPhone SE (2nd generation), iPhone12,8, running iOS 18.2 (22C152) with Dopamine 3.0.10 rootless. The tested environment includes CCSupport 1.3.13-3~ios18fix1. Other devices, iOS versions, jailbreaks and CCSupport versions are unverified. Sileo and Zebra repository-client validation is pending.
 
-Other devices, iOS versions, jailbreaks and CCSupport versions have not been verified. The package's architecture slices and deployment target are build properties, not broader compatibility claims.
+## Known limitations
 
-## Installation
+- Switching between Lantern and Apple's flashlight at the same brightness may require a second interaction to update the physical flashlight output.
+- Apple's expanded flashlight intensity interface can display its active indicator while Lantern is operating.
 
-Public distribution is not available yet. Installation instructions will be added with the first public release.
+## Installation, updates and removal
 
-## Usage
+Publication preparation: the repository is initially unsigned and not yet published. Live Sileo/Zebra compatibility validation is required; do not disable global package-manager authentication to use it.
 
-Add Lantern to Control Center using its editing controls. Tap Lantern for warm light, or the stock flashlight for white light. Long-press either control to use the native expanded intensity slider. Selecting one mode leaves the other unselected.
+Proposed source: `https://0chium.github.io/Lantern/` (not yet published/live-validated). Prepared links: [Add to Sileo](sileo://source/https://0chium.github.io/Lantern/) and [Add to Zebra](zbra://sources/add/https://0chium.github.io/Lantern/).
 
-## Known limitation
+Once published and validated, add the confirmed HTTPS URL, refresh sources, and install Lantern. CCSupport is required to load the custom module. The metadata-only release candidate `0.1.2-1` declares `mobilesubstrate, com.opa334.ccsupport`; its installed contents are identical to accepted Build #51. The original Build #51 package remains preserved unchanged.
 
-When switching between the stock flashlight and Lantern from the expanded intensity control, selecting the exact intensity already in use may not immediately change the flashlight color. Changing the intensity causes the selected mode to apply.
+Add Lantern using Control Center's editing controls. Tap for warm light; long-press for the expanded intensity slider. The stock flashlight remains available for white light.
 
-## Bug reports and support
+Use the package manager's normal update/remove action for Lantern. Turn the flashlight off before changing or removing the package. This package contains no automatic restart maintainer scripts. On the verified environment, activation requires restarting cameracaptured and reloading SpringBoard. A SpringBoard respring alone is not the verified complete procedure.
 
-Use the [bug report form](https://github.com/0chium/Lantern/issues/new?template=bug_report.yml) for problems and the [feature request form](https://github.com/0chium/Lantern/issues/new?template=feature_request.yml) for suggestions.
-
-Include your Lantern version, device, iOS/build, jailbreak version and the interaction you observed. For crashes, Safe Mode or unexpected restarts, attach the original crash or panic report when available rather than only a screenshot. Do not deliberately reproduce a crash just to obtain a report. Review attachments for private information before posting publicly.
-
-## Development
-
-Lantern aims to reuse Apple's native behavior and change only what the alternate flashlight mode requires, keeping hooks, dependencies, state and complexity small.
-
-Lantern was developed with assistance from OpenAI Codex and extensive testing against the stock iOS flashlight implementation. The project intentionally stays as close to Apple's native behavior as possible, changing only what is necessary to provide the alternate flashlight mode. Lantern is an independent project and is not endorsed by Apple or OpenAI.
-
-### Building
-
-The existing GitHub Actions workflow builds with Theos on macOS. With Theos and the required SDK/toolchain already configured, the package command is:
+The established root-shell procedure is:
 
 ```sh
-make clean package FINALPACKAGE=1
+/var/jb/usr/bin/killall -TERM cameracaptured
+/var/jb/usr/bin/sbreload
 ```
 
-The Makefile uses the rootless package scheme and builds arm64 and arm64e slices.
+These are explicit activation operations, not commands automatically performed by this package. They interrupt Camera and Control Center processes; close Camera before proceeding. Use the supported environment only. Package-manager installation/removal and these activation steps together still require release-client validation before publication. Do not upgrade unrelated packages merely to install Lantern.
+
+## Troubleshooting and support
+
+Check the supported environment, installed package version, CCSupport prerequisite and Control Center configuration. For incorrect color at matching brightness, review the known limitation above. If a crash or Safe Mode occurs, stop testing and preserve existing evidence without deliberately reproducing it.
+
+Report problems through https://github.com/0chium/Lantern/issues/new?template=bug_report.yml with device, iOS/build, jailbreak, Lantern version and exact observations. Review attachments for private information before posting. Request features through the existing feature-request form.
+
+## Artifact verification
+
+Release candidate: com.ochium.lantern 0.1.2-1, iphoneos-arm64 (Build #51 payload, dependency-only revision).
+
+SHA-256:
+`0456e46ca5000f2218d023f39b6d29f1f415b354d89b2a8cbf73a4da09b295a8`
+
+Preserved original Build #51 SHA-256: `098ed281b45d68f5214b183daf37763852beb755338c5c9e18e7ebc687ebc904`.
+
+The working implementation and artwork correspond to accepted commit `82e4d8e8c4b28af822ade2ab508b821350ddddb0`. Release-source control metadata additionally records version `0.1.2-1` and the CCSupport dependency. The distributed candidate is a verified metadata-only repack of Build #51, not a newly compiled artifact. Do not substitute diagnostic builds with the same version number.
 
 ## License
 
-License terms are pending an explicit final pre-publication decision. No project license has been selected or added.
+Original Lantern code and project-authored build configuration/documentation are licensed under MIT; see `LICENSE`. The copyright notice uses “2026 Lantern contributors.” This scope excludes `Resources/*.png`, Apple-owned material and third-party reference material. The six custom PNGs have independent design/editing provenance, with stock imagery used as reference only; redistribution of these six unmodified PNGs as part of Lantern is permitted with attribution to Lantern contributors under `ARTWORK_PERMISSION.md`, not MIT. No Apple or third-party research reference files are included in the release-source snapshot.
