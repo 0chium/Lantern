@@ -175,22 +175,22 @@ static void LanternSliderForMode(id self, SEL cmd, id sender, BOOL warm)
     }
     NSUInteger step = ((NSUInteger (*)(id, SEL))objc_msgSend)(sender, NSSelectorFromString(@"step"));
     LDGuard diagnosticInteraction(true);
-    LDLog(warm?10:11,self,step,LDFloatBits(((float (*)(id,SEL))objc_msgSend)(LanternFlashlight(),NSSelectorFromString(@"intensity"))),LanternLevel(),gWarm);
+    LDLog(warm?10:11,(__bridge const void *)self,step,LDFloatBits(((float (*)(id,SEL))objc_msgSend)(LanternFlashlight(),NSSelectorFromString(@"intensity"))),LanternLevel(),gWarm);
     LanternCancelPending();
     if (step <= 1) {
         {
-            LDLog(12,self,step,gWarm);
+            LDLog(12,(__bridge const void *)self,step,gWarm);
             ((void (*)(id, SEL, id))gAppleSlider)(self, cmd, sender);
-            LDLog(13,self,LDFloatBits(((float (*)(id,SEL))objc_msgSend)(LanternFlashlight(),NSSelectorFromString(@"intensity"))),LanternLevel(),gWarm);
+            LDLog(13,(__bridge const void *)self,LDFloatBits(((float (*)(id,SEL))objc_msgSend)(LanternFlashlight(),NSSelectorFromString(@"intensity"))),LanternLevel(),gWarm);
         }
         LanternSelectMode(NO);
     } else {
         if (LanternSelectMode(warm))
             // Consume this event before refresh can reset the live sender to off.
             {
-            LDLog(12,self,step,gWarm);
+            LDLog(12,(__bridge const void *)self,step,gWarm);
             ((void (*)(id, SEL, id))gAppleSlider)(self, cmd, sender);
-            LDLog(13,self,LDFloatBits(((float (*)(id,SEL))objc_msgSend)(LanternFlashlight(),NSSelectorFromString(@"intensity"))),LanternLevel(),gWarm);
+            LDLog(13,(__bridge const void *)self,LDFloatBits(((float (*)(id,SEL))objc_msgSend)(LanternFlashlight(),NSSelectorFromString(@"intensity"))),LanternLevel(),gWarm);
         }
         else LanternNativeOff();
     }
@@ -214,15 +214,15 @@ static void LanternWarmSlider(id self, SEL cmd, id sender)
 static void LanternUpdateControls(id self, SEL cmd)
 {
     LDGuard diagnosticUpdate;
-    if([NSThread isMainThread]) LDLog(50,self,((BOOL (*)(id,SEL))objc_msgSend)(self,@selector(isSelected)),gWarm);
+    if([NSThread isMainThread]) LDLog(50,(__bridge const void *)self,((BOOL (*)(id,SEL))objc_msgSend)(self,@selector(isSelected)),gWarm);
     ((void (*)(id, SEL))(gAppleUpdate ?: gFallback[2]))(self, cmd);
-    if([NSThread isMainThread]) LDLog(51,self,((BOOL (*)(id,SEL))objc_msgSend)(self,@selector(isSelected)),LanternLevel(),gWarm);
+    if([NSThread isMainThread]) LDLog(51,(__bridge const void *)self,((BOOL (*)(id,SEL))objc_msgSend)(self,@selector(isSelected)),LanternLevel(),gWarm);
     if (!gActive || ![NSThread isMainThread]) return;
     [gControls addObject:self];
     BOOL warmTile = [self isKindOfClass:gLanternControllerClass];
     BOOL selected = LanternAvailable() && LanternLevel() > 0 && gWarm == warmTile;
     ((void (*)(id, SEL, BOOL))objc_msgSend)(self, NSSelectorFromString(@"setSelected:"), selected);
-    LDLog(52,self,((BOOL (*)(id,SEL))objc_msgSend)(self,@selector(isSelected)),warmTile,gWarm,LanternLevel());
+    LDLog(52,(__bridge const void *)self,((BOOL (*)(id,SEL))objc_msgSend)(self,@selector(isSelected)),warmTile,gWarm,LanternLevel());
 }
 
 @interface LanternLevelObserver : NSObject
@@ -233,7 +233,7 @@ static void LanternUpdateControls(id self, SEL cmd)
 - (void)flashlightLevelDidChange:(NSUInteger)level
 {
     LDGuard diagnosticObserver;
-    LDLog(40,self,level);
+    LDLog(40,(__bridge const void *)self,level);
     // Native callback is main-thread UI work; defer reset beyond Apple's setter.
     dispatch_async(dispatch_get_main_queue(), ^{
         if (LanternLevel() == 0 && !gPendingTimer) LanternSelectMode(NO);
@@ -244,7 +244,7 @@ static void LanternUpdateControls(id self, SEL cmd)
 - (void)flashlightAvailabilityDidChange:(BOOL)available
 {
     LDGuard diagnosticObserver;
-    LDLog(41,self,available);
+    LDLog(41,(__bridge const void *)self,available);
     dispatch_async(dispatch_get_main_queue(), ^{
         LanternRefresh();
     });
@@ -263,19 +263,19 @@ static BOOL LanternMethodMatches(Class cls, NSString *name, const char *types)
 // Temporary diagnostic wrappers: exact encoding guard; no raw branch hooks.
 static IMP LDNativeLevel, LDNativeCore, LDNativeAV;
 static void LDSetLevel(id self,SEL cmd,NSUInteger level) {
-    LDGuard scope; LDLog(30,self,level);
+    LDGuard scope; LDLog(30,(__bridge const void *)self,level);
     ((void(*)(id,SEL,NSUInteger))LDNativeLevel)(self,cmd,level);
-    LDLog(31,self,LDFloatBits(((float(*)(id,SEL))objc_msgSend)(self,NSSelectorFromString(@"intensity"))));
+    LDLog(31,(__bridge const void *)self,LDFloatBits(((float(*)(id,SEL))objc_msgSend)(self,NSSelectorFromString(@"intensity"))));
 }
 static void LDSetCore(id self,SEL cmd,double intensity,double width,BOOL animated,NSUInteger power) {
-    LDGuard scope; LDLog(32,self,LDBits(intensity),LDBits(width),animated,power);
+    LDGuard scope; LDLog(32,(__bridge const void *)self,LDBits(intensity),LDBits(width),animated,power);
     ((void(*)(id,SEL,double,double,BOOL,NSUInteger))LDNativeCore)(self,cmd,intensity,width,animated,power);
-    LDLog(33,self,LDFloatBits(((float(*)(id,SEL))objc_msgSend)(self,NSSelectorFromString(@"intensity"))));
+    LDLog(33,(__bridge const void *)self,LDFloatBits(((float(*)(id,SEL))objc_msgSend)(self,NSSelectorFromString(@"intensity"))));
 }
 static BOOL LDSetAV(id self,SEL cmd,float intensity,id *error) {
-    LDGuard scope; LDLog(34,self,LDFloatBits(intensity));
+    LDGuard scope; LDLog(34,(__bridge const void *)self,LDFloatBits(intensity));
     BOOL result=((BOOL(*)(id,SEL,float,id *))LDNativeAV)(self,cmd,intensity,error);
-    LDLog(35,self,result); return result;
+    LDLog(35,(__bridge const void *)self,result); return result;
 }
 static void LDInstall(void) {
     LDInit();
