@@ -24,8 +24,8 @@ static thread_local uint64_t LDInteraction;
 static uint64_t LDSession;
 static mach_timebase_info_data_t LDTimebase;
 static std::atomic<bool> LDEnabled(false), LDExporting(false), LDExportInterrupted(false);
-static uint64_t LDBits(double value) { uint64_t bits; memcpy(&bits,&value,8); return bits; }
-static uint32_t LDFloatBits(float value) { uint32_t bits; memcpy(&bits,&value,4); return bits; }
+static inline uint64_t LDBits(double value) { uint64_t bits; memcpy(&bits,&value,8); return bits; }
+static inline uint32_t LDFloatBits(float value) { uint32_t bits; memcpy(&bits,&value,4); return bits; }
 static void LDLog(uint64_t event, const void *receiver, uint64_t a=0, uint64_t b=0, uint64_t c=0, uint64_t d=0)
 {
     if (!LDEnabled.load()) return;
