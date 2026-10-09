@@ -1,0 +1,17 @@
+Origin: Lantern
+Label: Lantern
+Architectures: iphoneos-arm64
+Description: Lantern rootless packages
+Date: Fri, 09 Oct 2026 04:40:13 GMT
+MD5Sum:
+ a2fb97e53661c2f38f9971f5685e714d 740 Packages
+ 8f2f9dd251c6561f0ce43f8be45b94e4 482 Packages.gz
+SHA1:
+ 3493f1d04a3b1d9de8e8d0ad1bc9c1a3018fa06b 740 Packages
+ d7b10f4c60ed17c65e71e984f8d0ac1dc5d4185f 482 Packages.gz
+SHA256:
+ aab5c574806e1ecce6ed8aab472dc3a93dce58478be408efa867b0f9d5b7129a 740 Packages
+ c982c3b9f3655b217fdd68172445542b2c47739e894d521b72b47da5bbfb9655 482 Packages.gz
+SHA512:
+ 60d0b984095c5682e8ade30fa426a2c2d7f8b6c523dcf0999139f7513b8724f9af7302868fe85aed96e53494714193cdf4935db28db85dfb62a73277455d5b01 740 Packages
+ 3e7d5977501d66c80a23a0c0e014751398aea60cccadbba911c0b07e547186785d925e3de73d5bba9e281c446f23276f29b5bc339cf9efafdeedcdb5a1de6c5b 482 Packages.gz

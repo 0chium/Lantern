@@ -1,0 +1,19 @@
+Package: com.ochium.lantern
+Name: Lantern
+Description: Native warm flashlight
+Maintainer: ochium
+Author: ochium
+Section: Tweaks
+Depends: mobilesubstrate, com.opa334.ccsupport
+Architecture: iphoneos-arm64
+Version: 0.1.2-1
+Installed-Size: 464
+Filename: debs/com.ochium.lantern_0.1.2-1_iphoneos-arm64.deb
+Size: 32914
+MD5sum: e5f202a95bc17f86f8c3096ad6411a55
+SHA1: 89b59cfbd2229ef19a290e8efaa499fc3e353de6
+SHA256: 0456e46ca5000f2218d023f39b6d29f1f415b354d89b2a8cbf73a4da09b295a8
+SHA512: 0f08e7cd6fd624ceae0be1667d49e942df830f52c1d5672c86533891aedf66ad2257d734228574a25a9d263853e92a43ea75e7d7ec1659791bb1ea2dac7668e3
+Icon: https://0chium.github.io/Lantern/assets/Lantern-public-on.png
+Depiction: https://0chium.github.io/Lantern/depiction.html
+
