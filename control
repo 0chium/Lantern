@@ -1,9 +1,9 @@
 Package: com.ochium.lantern
 Name: Lantern
-Version: 0.1.2
+Version: 0.1.2-1+diag.s1.20261010.r1
 Architecture: iphoneos-arm64
-Description: Native warm flashlight
+Description: PRIVATE Build 51 opt-in Stage 1 diagnostics; not a public release
 Maintainer: ochium
 Author: ochium
 Section: Tweaks
-Depends: mobilesubstrate
+Depends: mobilesubstrate, com.opa334.ccsupport

@@ -1,0 +1,90 @@
+{
+  "baseline": "82e4d8e8c4b28af822ade2ab508b821350ddddb0",
+  "build": "lantern-b51-diag-s1-20261010-r1",
+  "files": {
+    "Tweak.xm": {
+      "mode": "text-lf",
+      "sha256": "4b78ffe0fece29b9931603e3d7842c9dd6a84abf8d2b6fb5f53b10e13038b14d"
+    },
+    "LanternModule.mm": {
+      "mode": "text-lf",
+      "sha256": "5d16e1e77c3d70f3e8d0b18c4718793a8997f4df4f91e0ecbd3871844607a71e"
+    },
+    "LanternCtl.c": {
+      "mode": "text-lf",
+      "sha256": "f16e6600312d690a54c7e93d3f9547b10c01da5e50d499f8345c548decc246f7"
+    },
+    "Makefile": {
+      "mode": "text-lf",
+      "sha256": "4490a92e6167b0ed4d4dd679a12bde52f66fcab821358ecc13ac0eafae3affdf"
+    },
+    "control": {
+      "mode": "text-lf",
+      "sha256": "ab4da86cea1fde1b3f822215ecd5cfcf777304684a7d789b02f8e88b9a74f3c1"
+    },
+    "LanternDiagnostic.h": {
+      "mode": "text-lf",
+      "sha256": "4c0208b8b5742dd2f40046459f2e958c224d6a7070c0d9f0f076fa4e6990a068"
+    },
+    "LanternDiagnosticBuild.h": {
+      "mode": "text-lf",
+      "sha256": "204b07e863d969d7829806f7e217d05ae561b56eaf7d3602d0b15d7a414552cb"
+    },
+    "LanternDiagnosticCore.h": {
+      "mode": "text-lf",
+      "sha256": "6f9d913d984be8ddcbf2632cf7551ea5ad1a9b3ce76f157247a1583d5571ae09"
+    },
+    "Lantern.plist": {
+      "mode": "text-lf",
+      "sha256": "92e857820186d0be0fe69dc1eba58f13fdc6c6ca7346510104a116b561bdfcd2"
+    },
+    "Resources/Info.plist": {
+      "mode": "text-lf",
+      "sha256": "9010421ffba054d1b236405f32db3c9e83def5332440567c2e59c6e4c24cc451"
+    },
+    "Resources/LanternCustom-off@2x.png": {
+      "mode": "bytes",
+      "sha256": "75962eafd9a41d16bddb2f85da754be74932b88756b30fc59895dee2993464cd"
+    },
+    "Resources/LanternCustom-off@3x.png": {
+      "mode": "bytes",
+      "sha256": "8a4ab4808cb268c86f94d4bb4b56b99d7d8af5299f925460c8f9a66eac9de51c"
+    },
+    "Resources/LanternCustom-on@2x.png": {
+      "mode": "bytes",
+      "sha256": "f8c073eb5c8fb0ff2cc8dfa4f8084a5b5043acc23cf52b49897bf858f7e74957"
+    },
+    "Resources/LanternCustom-on@3x.png": {
+      "mode": "bytes",
+      "sha256": "b84060361319c839f27a8d9d111d41955bf4ef111419441acba6d197e6fcb1e4"
+    },
+    "Resources/LanternHeader-on@2x.png": {
+      "mode": "bytes",
+      "sha256": "dd71302b520242ea9e52cfc9d93a04f685e06ac958bc526da9dfc4f6fba9dcec"
+    },
+    "Resources/LanternHeader-on@3x.png": {
+      "mode": "bytes",
+      "sha256": "0471496801966fe0be0ea82eb5287dea235b087bb0ed3c2f52e9ee916a14bcc3"
+    },
+    "ci/verify_stage1.py": {
+      "mode": "text-lf",
+      "sha256": "980299d964152fdee1df697f179d28adbc96ef92b05e0f001ff3d2ba165c6ffe"
+    },
+    "ci/baseline-linkage.json": {
+      "mode": "text-lf",
+      "sha256": "f8341b45487f2b939b96e73d235ab4053cf7aeabd26aa2cc97548ac8a63263f8"
+    },
+    ".github/workflows/build.yml": {
+      "mode": "text-lf",
+      "sha256": "7b30ac879b421c52a4dc01795985caf4ed414b88b39826718e46f460dfde022a"
+    },
+    "DIAGNOSTIC_BUILD.md": {
+      "mode": "text-lf",
+      "sha256": "3c3345b1f199826258866f42e17b8fa1214ebd6ae7cc77403c2f19f3d7aa6166"
+    },
+    ".gitignore": {
+      "mode": "text-lf",
+      "sha256": "855cf3e6e8eec5d2bc0eaa279b1993555bc360bb5d2ed27fa0921ae93a135bbc"
+    }
+  }
+}

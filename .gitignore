@@ -1,0 +1,7 @@
+ci-output/
+packages/
+.theos/
+sdks-master.tar.gz
+sdks-master/
+**/__pycache__/
+*.pyc

@@ -6,6 +6,11 @@
 #import <substrate.h>
 #include <stdint.h>
 #include <string.h>
+#define LD_ROLE "SpringBoard"
+#include "LanternDiagnostic.h"
+
+__attribute__((constructor))
+static void LanternModuleEntered(void) { LDComponentEntry(); }
 
 @protocol CCUIContentModule <NSObject>
 @required
@@ -51,15 +56,21 @@ static BOOL LanternAvailable(void)
 
 static BOOL LanternPublish(BOOL warm)
 {
-    if (gSetState(gStateToken, warm ? 1 : 0) != 0) return NO;
-    if (gPost(kLanternStateNotification) != 0) return NO;
+    LDLog(LD_UI_INTENT, warm);
+    uint32_t set = gSetState(gStateToken, warm ? 1 : 0);
+    LDLog(LD_UI_SET, warm, set);
+    if (set != 0) return NO;
+    uint32_t post = gPost(kLanternStateNotification);
+    LDLog(LD_UI_POST, warm, post);
+    if (post != 0) return NO;
     gWarm = warm;
     return YES; // Publication only: NOT consumer acknowledgement.
 }
 
 static BOOL LanternSelectMode(BOOL warm)
 {
-    return gWarm == warm || LanternPublish(warm);
+    if (gWarm == warm) { LDLog(LD_UI_SAME, warm); return YES; }
+    return LanternPublish(warm);
 }
 
 static void LanternCancelPending(void)
@@ -143,6 +154,7 @@ static void LanternButtonForMode(BOOL warm)
 
 static void LanternStockButton(id self, SEL cmd, id sender, id event)
 {
+    LDLog(LD_INIT_STAGE, 40); // replacement observed executing; no pointer data
     if (!gActive || ![NSThread isMainThread]) {
         ((void (*)(id, SEL, id, id))(gAppleButton ?: gFallback[0]))(self, cmd, sender, event);
         return;
@@ -152,6 +164,7 @@ static void LanternStockButton(id self, SEL cmd, id sender, id event)
 
 static void LanternWarmButton(id self, SEL cmd, id sender, id event)
 {
+    LDLog(LD_INIT_STAGE, 43); // subclass action observed, separate from stock hook
     if (gActive && [NSThread isMainThread]) LanternButtonForMode(YES);
 }
 
@@ -182,6 +195,7 @@ static void LanternSliderForMode(id self, SEL cmd, id sender, BOOL warm)
 
 static void LanternStockSlider(id self, SEL cmd, id sender)
 {
+    LDLog(LD_INIT_STAGE, 41);
     if (!gActive || ![NSThread isMainThread]) {
         ((void (*)(id, SEL, id))(gAppleSlider ?: gFallback[1]))(self, cmd, sender);
         return;
@@ -196,6 +210,7 @@ static void LanternWarmSlider(id self, SEL cmd, id sender)
 
 static void LanternUpdateControls(id self, SEL cmd)
 {
+    LDLog(LD_INIT_STAGE, 42);
     ((void (*)(id, SEL))(gAppleUpdate ?: gFallback[2]))(self, cmd);
     if (!gActive || ![NSThread isMainThread]) return;
     [gControls addObject:self];
@@ -231,14 +246,21 @@ static BOOL LanternMethodMatches(Class cls, NSString *name, const char *types)
 {
     Method method = class_getInstanceMethod(cls, NSSelectorFromString(name));
     const char *actual = method ? method_getTypeEncoding(method) : NULL;
-    return actual && strcmp(actual, types) == 0;
+    BOOL matches = actual && strcmp(actual, types) == 0;
+    if (!matches) LDInitRecord(LD_UI_TYPE_FAILURE, LDHash([name UTF8String]), LDHash(types), LDHash(actual));
+    return matches;
 }
 
 static Class LanternControllerClass(void)
 {
-    if (![NSThread isMainThread]) return Nil;
+    static LDU64 requested;
+    LDU64 zero = 0;
+    if (__atomic_compare_exchange_n(&requested, &zero, 1, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED))
+        LDInitRecord(LD_INIT_STAGE, 19);
+    if (![NSThread isMainThread]) { LDLog(LD_INIT_STAGE, 18); return Nil; }
     static dispatch_once_t once;
     dispatch_once(&once, ^{
+        LDInitRecord(LD_INIT_STAGE, 20);
         dlopen("/System/Library/ControlCenter/Bundles/FlashlightModule.bundle/FlashlightModule", RTLD_NOW | RTLD_GLOBAL);
         Class apple = NSClassFromString(@"CCUIFlashlightModuleViewController");
         Class flashlight = NSClassFromString(@"SBUIFlashlightController");
@@ -255,39 +277,48 @@ static Class LanternControllerClass(void)
             !LanternMethodMatches(flashlight, @"_setIntensity:width:animated:withPowerChange:", "v44@0:8d16d24B32Q36") ||
             !LanternMethodMatches(flashlight, @"turnFlashlightOnForReason:", "v24@0:8@16") ||
             !LanternMethodMatches(flashlight, @"turnFlashlightOffForReason:", "v24@0:8@16") ||
-            !LanternMethodMatches(flashlight, @"addObserver:", "v24@0:8@16")) return;
+            !LanternMethodMatches(flashlight, @"addObserver:", "v24@0:8@16")) {
+            LDInitRecord(LD_INIT_FAILURE, 20, !!apple, !!flashlight); return;
+        }
         NotifyRegisterFn reg = (NotifyRegisterFn)dlsym(RTLD_DEFAULT, "notify_register_check");
         gSetState = (NotifySetFn)dlsym(RTLD_DEFAULT, "notify_set_state");
         gPost = (NotifyPostFn)dlsym(RTLD_DEFAULT, "notify_post");
         if (!reg || !gSetState || !gPost || reg(kLanternStateNotification, &gStateToken) != 0 ||
-            !LanternPublish(NO)) return;
+            !LanternPublish(NO)) { LDInitRecord(LD_INIT_FAILURE, 21); return; }
         Class cls = objc_allocateClassPair(apple, "LanternNativeFlashlightViewController", 0);
-        if (!cls) return;
+        if (!cls) { LDInitRecord(LD_INIT_FAILURE, 22); return; }
         SEL button = NSSelectorFromString(@"buttonTapped:forEvent:");
         SEL slider = NSSelectorFromString(@"_sliderValueDidChange:");
         if (!class_addMethod(cls, button, (IMP)LanternWarmButton, method_getTypeEncoding(class_getInstanceMethod(apple, button))) ||
             !class_addMethod(cls, slider, (IMP)LanternWarmSlider, method_getTypeEncoding(class_getInstanceMethod(apple, slider)))) {
-            objc_disposeClassPair(cls); return;
+            LDInitRecord(LD_INIT_FAILURE, 23); objc_disposeClassPair(cls); return;
         }
         gControls = [NSHashTable weakObjectsHashTable];
         gObserver = [LanternLevelObserver new];
-        if (!gControls || !gObserver || !LanternFlashlight()) { objc_disposeClassPair(cls); return; }
+        if (!gControls || !gObserver || !LanternFlashlight()) { LDInitRecord(LD_INIT_FAILURE, 24); objc_disposeClassPair(cls); return; }
         gFallback[0] = class_getMethodImplementation(apple, button);
         gFallback[1] = class_getMethodImplementation(apple, slider);
         gFallback[2] = class_getMethodImplementation(apple, NSSelectorFromString(@"_updateControls"));
+        LDInitRecord(LD_HOOK_REQUEST, 40);
         MSHookMessageEx(apple, button, (IMP)LanternStockButton, &gAppleButton);
+        LDInitRecord(LD_HOOK_ORIGINAL, !!gAppleButton, 40);
+        LDInitRecord(LD_HOOK_REQUEST, 41);
         MSHookMessageEx(apple, slider, (IMP)LanternStockSlider, &gAppleSlider);
+        LDInitRecord(LD_HOOK_ORIGINAL, !!gAppleSlider, 41);
+        LDInitRecord(LD_HOOK_REQUEST, 42);
         MSHookMessageEx(apple, NSSelectorFromString(@"_updateControls"), (IMP)LanternUpdateControls, &gAppleUpdate);
+        LDInitRecord(LD_HOOK_ORIGINAL, !!gAppleUpdate, 42);
         if (!gAppleButton || !gAppleSlider || !gAppleUpdate ||
             class_getMethodImplementation(apple, button) != (IMP)LanternStockButton ||
             class_getMethodImplementation(apple, slider) != (IMP)LanternStockSlider ||
             class_getMethodImplementation(apple, NSSelectorFromString(@"_updateControls")) != (IMP)LanternUpdateControls) {
-            objc_disposeClassPair(cls); return;
+            LDInitRecord(LD_INIT_FAILURE, 25); objc_disposeClassPair(cls); return;
         }
         gLanternControllerClass = cls;
         objc_registerClassPair(cls);
         ((void (*)(id, SEL, id))objc_msgSend)(LanternFlashlight(), NSSelectorFromString(@"addObserver:"), gObserver);
         gActive = YES;
+        LDInitRecord(LD_INIT_READY, 20); // existing IMP checks passed, color unverified
     });
     return gActive ? gLanternControllerClass : Nil;
 }

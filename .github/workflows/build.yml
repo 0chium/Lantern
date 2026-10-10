@@ -1,44 +1,61 @@
-name: Build Lantern
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: macos-15
-
-    steps:
-      - name: Checkout Lantern
-        uses: actions/checkout@v4
-
-      - name: Install Theos
-        run: |
-          git clone --recursive https://github.com/theos/theos.git $HOME/theos
-          echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
-
-      - name: Install iOS toolchain
-        run: |
-          brew install ldid xz
-          curl -LO https://github.com/theos/sdks/archive/master.tar.gz
-          tar -xzf master.tar.gz
-          mkdir -p "$HOME/theos/sdks"
-          cp -R sdks-master/*.sdk "$HOME/theos/sdks/"
-
-      - name: Build Lantern package
-        run: |
-          export THEOS="$HOME/theos"
-          make clean package FINALPACKAGE=1
-
-      - name: Show packages
-        run: |
-          find packages -type f -maxdepth 1 -print
-
-      - name: Upload Lantern deb
-        uses: actions/upload-artifact@v4
-        with:
-          name: Lantern
-          path: packages/*.deb
-          if-no-files-found: error
+{
+  "name": "Build Lantern Stage 1 diagnostic (unreleased)",
+  "run-name": "Stage1 diagnostic ${{ github.ref_name }} @ ${{ github.sha }}",
+  "on": {
+    "workflow_dispatch": {}
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "jobs": {
+    "build": {
+      "runs-on": "macos-15",
+      "timeout-minutes": 45,
+      "defaults": {
+        "run": {
+          "shell": "bash"
+        }
+      },
+      "steps": [
+        {
+          "name": "Checkout reviewed diagnostic branch",
+          "uses": "actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "with": {
+            "fetch-depth": 0,
+            "persist-credentials": false
+          }
+        },
+        {
+          "name": "Verify branch, baseline and source hashes",
+          "run": "set -euo pipefail\npython3 ci/verify_stage1.py inputs"
+        },
+        {
+          "name": "Install Theos using established workflow",
+          "run": "set -euo pipefail\ngit clone --recursive https://github.com/theos/theos.git \"$HOME/theos\"\necho \"THEOS=$HOME/theos\" >> \"$GITHUB_ENV\"\n{ git -C \"$HOME/theos\" rev-parse HEAD; git -C \"$HOME/theos\" submodule status --recursive; } > ci-output/theos-revisions.txt"
+        },
+        {
+          "name": "Install established iOS toolchain and record environment",
+          "run": "set -euo pipefail\nbrew install ldid xz\ncurl -fL --retry 0 https://github.com/theos/sdks/archive/master.tar.gz -o sdks-master.tar.gz\nshasum -a 256 sdks-master.tar.gz > ci-output/sdk-archive.sha256\ntar -xzf sdks-master.tar.gz\nmkdir -p \"$HOME/theos/sdks\"\ncp -R sdks-master/*.sdk \"$HOME/theos/sdks/\"\n{ sw_vers; uname -m; xcode-select -p; xcodebuild -version; xcrun clang --version; python3 --version; brew list --versions ldid xz; ls \"$HOME/theos/sdks\"; } > ci-output/build-environment.txt"
+        },
+        {
+          "name": "Build distinctly versioned diagnostic package",
+          "run": "set -euo pipefail\nexport THEOS=\"$HOME/theos\"\nmake clean package FINALPACKAGE=1 PACKAGE_VERSION=0.1.2-1+diag.s1.20261010.r1 messages=yes 2>&1 | tee ci-output/build.log"
+        },
+        {
+          "name": "Inspect both components, filters, slices and linkage",
+          "run": "set -euo pipefail\npython3 ci/verify_stage1.py package"
+        },
+        {
+          "name": "Upload unreleased diagnostic and integrity evidence",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "lantern-b51-diag-s1-20261010-r1-${{ github.run_id }}-${{ github.run_attempt }}",
+            "path": "packages/*.deb\nci-output/*\nci/source-lock.json\nci/baseline-linkage.json",
+            "if-no-files-found": "error",
+            "retention-days": 14
+          }
+        }
+      ]
+    }
+  }
+}

@@ -3,6 +3,35 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+#include "LanternDiagnosticBuild.h"
+
+static int diagnostic(int argc, char **argv)
+{
+    const char *name = NULL;
+    uint64_t capture = 0;
+    if (strcmp(argv[1], "diagnostic-arm") == 0) {
+        if (argc != 3 || strlen(argv[2]) != 16) return 1;
+        for (unsigned i = 0; i < 16; ++i)
+            if (!((argv[2][i] >= '0' && argv[2][i] <= '9') ||
+                  (argv[2][i] >= 'a' && argv[2][i] <= 'f') ||
+                  (argv[2][i] >= 'A' && argv[2][i] <= 'F'))) return 1;
+        errno = 0; capture = strtoull(argv[2], NULL, 16);
+        if (errno || !capture) return 1;
+        name = LD_ARM_NAME;
+    } else if (argc == 2 && strcmp(argv[1], "diagnostic-stop") == 0) name = LD_STOP_NAME;
+    else if (argc == 2 && strcmp(argv[1], "diagnostic-export") == 0) name = LD_EXPORT_NAME;
+    else return 1;
+    int token = -1;
+    uint32_t status = notify_register_check(name, &token);
+    if (!status && capture) status = notify_set_state(token, capture);
+    if (!status) status = notify_post(name);
+    if (token >= 0) notify_cancel(token);
+    if (status) { fprintf(stderr, "Diagnostic request failed: %u\n", status); return 1; }
+    printf("%s: request posted; delivery/export NOT acknowledged; LED color unverified\n", LD_BUILD_ID);
+    return 0;
+}
 
 typedef uint32_t (*NotifyRegisterCheckFunction)(
     const char *name,
@@ -32,6 +61,8 @@ static const char *kLanternStateNotification =
 
 int main(int argc, char **argv)
 {
+    // Diagnostic requests never register or change the ordinary warm-state channel.
+    if (argc >= 2 && strncmp(argv[1], "diagnostic-", 11) == 0) return diagnostic(argc, argv);
     NotifyRegisterCheckFunction notifyRegisterCheck =
         (NotifyRegisterCheckFunction)dlsym(
             RTLD_DEFAULT,

@@ -4,7 +4,8 @@ ARCHS = arm64 arm64e
 TARGET = iphone:clang:16.5:15.0
 THEOS_PACKAGE_SCHEME = rootless
 
-INSTALL_TARGET_PROCESSES = cameracaptured SpringBoard
+# Private review copy: no automatic process restart target.
+INSTALL_TARGET_PROCESSES =
 
 include $(THEOS)/makefiles/common.mk
 
