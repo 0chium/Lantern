@@ -26,7 +26,7 @@ static char LDActualProcess[64],LDModel[64],LDOSBuild[64];
 static inline LDU64 LDNow() { return mach_continuous_time(); }
 static void LDInitRecord(LDU64 e,LDU64 a=0,LDU64 b=0,LDU64 c=0,LDU64 d=0) { LDCoreInit(&LDState,LDNow(),e,a,b,c,d); }
 static void LDLog(LDU64 e,LDU64 a=0,LDU64 b=0,LDU64 c=0,LDU64 d=0) { LDCoreLog(&LDState,LDNow(),e,a,b,c,d); }
-static LDU64 LDHash(const char *s) { LDU64 h=14695981039346656037ULL; if(s) for(unsigned i=0;s[i]&&i<128;i++){h^=(unsigned char)s[i];h*=1099511628211ULL;} return s?h:0; }
+static inline LDU64 LDHash(const char *s) { LDU64 h=14695981039346656037ULL; if(s) for(unsigned i=0;s[i]&&i<128;i++){h^=(unsigned char)s[i];h*=1099511628211ULL;} return s?h:0; }
 struct LDCall {
     LDHardware *record;
     LDCall(unsigned arg1,unsigned levels):record(LDCoreBegin(&LDState,LDNow(),arg1,levels)) {}
