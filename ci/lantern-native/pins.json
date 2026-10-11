@@ -1,0 +1,56 @@
+{
+  "source": "82e4d8e8c4b28af822ade2ab508b821350ddddb0",
+  "theos": "304e0799973e8145f32e4ca2de6c747a84b758ce",
+  "sdks": "0222fd5413cf4b9af096f37b4621afa2688572f7",
+  "checkout": "11bd71901bbe5b1630ceea73d27597364c9af683",
+  "upload_artifact": "ea165f8d65b6e75b540449e92b4886f43607fa02",
+  "runner_document_observed_commit": "8197087fc536320d1441203fdb5da9ae1b44b863",
+  "xcode": "16.4",
+  "xcode_build": "16F6",
+  "developer_dir": "/Applications/Xcode_16.4.app/Contents/Developer",
+  "sdk_directory": "iPhoneOS16.5.sdk",
+  "sdk_internal_version": "16.4",
+  "sdk_settings_sha256": "e402d200c37290c9bb7c92d8f4b2dbb00374fa9b73bddd16f613fafa92f625a4",
+  "theos_submodules": [
+    {
+      "path": "vendor/dm.pl",
+      "type": "commit",
+      "sha": "d9a3b72e274226dd2823c0a7c1d6d05099f4f51c"
+    },
+    {
+      "path": "vendor/include",
+      "type": "commit",
+      "sha": "13c1f17176d7efe6871551cd69a75b71ac4eeaf1"
+    },
+    {
+      "path": "vendor/lib",
+      "type": "commit",
+      "sha": "6f2af307568e6b8c52181d26314b0cd69ffaf188"
+    },
+    {
+      "path": "vendor/logos",
+      "type": "commit",
+      "sha": "777925d1add4ee3485a2432a6f6d5e3ded59de7b"
+    },
+    {
+      "path": "vendor/nic",
+      "type": "commit",
+      "sha": "4e7adcbeac2e4636b91e2f76341adfe4c4d0ceec"
+    },
+    {
+      "path": "vendor/orion",
+      "type": "commit",
+      "sha": "762159dc214d5aafa2edfc7554c659fc3c658b5b"
+    },
+    {
+      "path": "vendor/swift-support",
+      "type": "commit",
+      "sha": "4cf59ff04cdb2ceb27ea2228753e0497297b6182"
+    },
+    {
+      "path": "vendor/templates",
+      "type": "commit",
+      "sha": "6c3944e281c4726f1383755d0fbb642840312d28"
+    }
+  ]
+}

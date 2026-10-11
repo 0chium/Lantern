@@ -1,0 +1,113 @@
+{
+  "commit": "82e4d8e8c4b28af822ade2ab508b821350ddddb0",
+  "files": [
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
+      "mode": "100644",
+      "size": 3174,
+      "sha256": "23d761779264b1483131389549fb869e52d804b7f9316479e8ef945f89f959e1"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/config.yml",
+      "mode": "100644",
+      "size": 28,
+      "sha256": "1f103c6a9dd07cd13a9a6f17ace6b813f47747eb9cb7e00488cb2073caaf91bb"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/feature_request.yml",
+      "mode": "100644",
+      "size": 771,
+      "sha256": "b3783f1cfb2b3cebd0c2928180bab86bf0d80bde3b8c72cdb47b936ce020468b"
+    },
+    {
+      "path": ".github/workflows/build.yml",
+      "mode": "100644",
+      "size": 1057,
+      "sha256": "e58d72284f78979ba485f4fe76f153c78f2d7caaca47f67f1c814f7acf0deceb"
+    },
+    {
+      "path": "Lantern.plist",
+      "mode": "100644",
+      "size": 88,
+      "sha256": "92e857820186d0be0fe69dc1eba58f13fdc6c6ca7346510104a116b561bdfcd2"
+    },
+    {
+      "path": "LanternCtl.c",
+      "mode": "100644",
+      "size": 3015,
+      "sha256": "f78ebe462ee8855d03458bd76b0e6cbe68457b1d07ea40caa0383621c1302cc0"
+    },
+    {
+      "path": "LanternModule.mm",
+      "mode": "100644",
+      "size": 17698,
+      "sha256": "46cabbe1785863b088b8b911d5d551bdf846277c202e6e928f6e9f5217992730"
+    },
+    {
+      "path": "Makefile",
+      "mode": "100644",
+      "size": 795,
+      "sha256": "a34d92f5b034605953216ef8441ad4d2b99e7cd543f610f200258a2067a3abdc"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "size": 2942,
+      "sha256": "f6c05852e5ce9b1c78be4cb5b138e4568750864b5aa9f1f8f3797ee7ae1e0d36"
+    },
+    {
+      "path": "Resources/Info.plist",
+      "mode": "100644",
+      "size": 1618,
+      "sha256": "9010421ffba054d1b236405f32db3c9e83def5332440567c2e59c6e4c24cc451"
+    },
+    {
+      "path": "Resources/LanternCustom-off@2x.png",
+      "mode": "100644",
+      "size": 1274,
+      "sha256": "75962eafd9a41d16bddb2f85da754be74932b88756b30fc59895dee2993464cd"
+    },
+    {
+      "path": "Resources/LanternCustom-off@3x.png",
+      "mode": "100644",
+      "size": 1909,
+      "sha256": "8a4ab4808cb268c86f94d4bb4b56b99d7d8af5299f925460c8f9a66eac9de51c"
+    },
+    {
+      "path": "Resources/LanternCustom-on@2x.png",
+      "mode": "100644",
+      "size": 2122,
+      "sha256": "f8c073eb5c8fb0ff2cc8dfa4f8084a5b5043acc23cf52b49897bf858f7e74957"
+    },
+    {
+      "path": "Resources/LanternCustom-on@3x.png",
+      "mode": "100644",
+      "size": 3182,
+      "sha256": "b84060361319c839f27a8d9d111d41955bf4ef111419441acba6d197e6fcb1e4"
+    },
+    {
+      "path": "Resources/LanternHeader-on@2x.png",
+      "mode": "100644",
+      "size": 2553,
+      "sha256": "dd71302b520242ea9e52cfc9d93a04f685e06ac958bc526da9dfc4f6fba9dcec"
+    },
+    {
+      "path": "Resources/LanternHeader-on@3x.png",
+      "mode": "100644",
+      "size": 3820,
+      "sha256": "0471496801966fe0be0ea82eb5287dea235b087bb0ed3c2f52e9ee916a14bcc3"
+    },
+    {
+      "path": "Tweak.xm",
+      "mode": "100644",
+      "size": 3061,
+      "sha256": "ca96c2d403c507ac3a261a334196f0a69c2cd74a89423b04d036e3f129d125d3"
+    },
+    {
+      "path": "control",
+      "mode": "100644",
+      "size": 197,
+      "sha256": "70b0a870109044a26a0eca10396791c17e6dae199f966b9484eec62fd82eb32e"
+    }
+  ]
+}

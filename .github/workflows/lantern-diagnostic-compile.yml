@@ -1,0 +1,51 @@
+name: Lantern isolated compile validation - NOT a package
+
+on:
+  push:
+    branches:
+      - diagnostics/lantern-native-ci
+    paths:
+      - .github/workflows/lantern-diagnostic-compile.yml
+      - ci/lantern-native/**
+
+permissions:
+  contents: read
+
+jobs:
+  compile-only:
+    if: github.repository == '0chium/Lantern' && github.ref == 'refs/heads/diagnostics/lantern-native-ci'
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+    steps:
+      - name: Checkout reviewed infrastructure
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          path: infra
+          persist-credentials: false
+      - name: Checkout immutable accepted source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: 82e4d8e8c4b28af822ade2ab508b821350ddddb0
+          path: baseline
+          persist-credentials: false
+      - name: Compile accepted baseline and standalone native logging probe
+        working-directory: baseline
+        shell: bash
+        run: bash "$GITHUB_WORKSPACE/infra/ci/lantern-native/compile.sh"
+      - name: Hash completed logs including failure evidence
+        if: always()
+        working-directory: baseline
+        shell: bash
+        run: python3 "$GITHUB_WORKSPACE/infra/ci/lantern-native/validate_output.py" final-evidence
+      - name: Preserve validation evidence only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: NON-INSTALLABLE-lantern-compile-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: baseline/compile-evidence/
+          if-no-files-found: error
+          retention-days: 14
+
