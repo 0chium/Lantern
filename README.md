@@ -74,3 +74,5 @@ The implementation derives from accepted Build51 commit `82e4d8e8c4b28af822ade2a
 ## License
 
 Original Lantern code and project-authored build configuration/documentation use the scoped [MIT license](LICENSE). Artwork has [separate redistribution permission](ARTWORK_PERMISSION.md), requires attribution to Lantern contributors, and is not licensed under MIT. Neither notice grants rights to Apple-owned or third-party reference materials.
+
+Optional: [Support Development](https://ko-fi.com/0chium). Lantern is free and open-source; donations do not affect support or compatibility reporting.
