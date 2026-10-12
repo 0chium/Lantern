@@ -6,13 +6,13 @@ body:
     attributes:
       value: |
         Please check the README's tested environment and known limitation first.
-        For crashes, Safe Mode, SpringBoard crashes or reboots, attach the ORIGINAL .ips/crash/panic report when available, not only a screenshot. Do not deliberately reproduce a crash to obtain a report.
-        Reports are public. Review attachments for private information; do not include credentials, Apple ID details or a full sysdiagnose. If you cannot share a report safely, say that it is available instead.
+        For crashes, Safe Mode, SpringBoard crashes or reboots, keep the original .ips/crash/panic report locally and attach a redacted copy if available and safe to share, not only a screenshot. Do not deliberately reproduce a crash to obtain a report.
+        Reports are public. Never post passwords, tokens, Apple ID details, unique device identifiers, unredacted sensitive logs or a full sysdiagnose. If you cannot share a report safely, say that it is available instead.
   - type: input
     id: lantern-version
     attributes:
       label: Lantern version
-      placeholder: "0.1.2"
+      placeholder: "0.1.2-1"
     validations:
       required: true
   - type: input
@@ -85,7 +85,7 @@ body:
   - type: textarea
     id: reports
     attributes:
-      label: Original crash/panic report and additional information
-      description: Attach the original report here if available and safe to share. Other useful attachments or context are optional; screenshots alone do not replace a crash report.
+      label: Redacted crash/panic report and additional information
+      description: Keep the original report locally; attach a redacted copy if available and safe to share. Other useful attachments or context are optional; screenshots alone do not replace a crash report.
     validations:
       required: false

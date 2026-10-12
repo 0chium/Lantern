@@ -1,58 +1,76 @@
 # Lantern 0.1.2-1
 
-![Lantern ON presentation](https://0chium.github.io/Lantern/assets/Lantern-public-on.png)
+![Lantern icon](https://0chium.github.io/assets/Lantern-public-on.png)
 
-*Standalone accepted Build #51 ON header artwork, with transparent square padding.*
+Lantern adds warm/yellow flashlight control to iOS Control Center, using Apple's native expanded intensity slider. The stock flashlight remains available for white light.
 
-Warm/yellow flashlight control for iOS Control Center, with Apple's native expanded intensity slider and a custom lantern illustration.
+Install the production release from [0chium's Repo](https://0chium.github.io/).
 
-## Supported environment
+## Compatibility
 
-Verified on iPhone SE (2nd generation), iPhone12,8, running iOS 18.2 (22C152) with Dopamine 3.0.10 rootless. The tested environment includes CCSupport 1.3.13-3~ios18fix1. Other devices, iOS versions, jailbreaks and CCSupport versions are unverified. Sileo and Zebra repository-client validation is pending.
+| Status | Configuration | Evidence |
+| --- | --- | --- |
+| Verified working | iPhone SE (2nd generation), iPhone12,8; iOS 18.2 (22C152); Dopamine 3.0.10 rootless | Physical white/warm/off behavior verified on device. Tested with CCSupport 1.3.13-3~ios18fix1. |
+| Tester-reported problem, not independently verified | iPhone 11 Pro; iOS 18.1.1; converted RootHide installation | Control Center control reportedly appears, but physical output remains white. Cause under investigation. |
+| Tester-reported problem, not independently verified | iOS 16.5.1; other configuration details incomplete | Safe Mode reported. Cause and exact installed package not established. |
+| Tester-reported functionality, not independently verified | Other iOS 18 configurations; details incomplete | Functionality reports do not establish support for every device, jailbreak or iOS 18 version. |
+| Untested or unknown | Configurations not verified above | No compatibility claim. |
 
-## Known limitations
-
-- Switching between Lantern and Apple's flashlight at the same brightness may require a second interaction to update the physical flashlight output.
-- Apple's expanded flashlight intensity interface can display its active indicator while Lantern is operating.
+Sileo source refresh and the Lantern listing were verified on the reference device. This does not establish every installation, update or removal scenario. RootHide conversion alone is not confirmation of compatibility.
 
 ## Installation, updates and removal
 
-Publication preparation: the repository is initially unsigned and not yet published. Live Sileo/Zebra compatibility validation is required; do not disable global package-manager authentication to use it.
+1. Turn the flashlight off and close Camera before installing, updating or removing Lantern.
+2. [Add to Sileo](sileo://source/https://0chium.github.io/), or manually add `https://0chium.github.io/` in Sileo's Sources.
+3. Refresh sources and install **Lantern 0.1.2-1** through the package manager. Dependencies are `mobilesubstrate` and `com.opa334.ccsupport`; compatible CCSupport is needed for the Control Center module.
+4. Complete activation below, then add Lantern using Control Center's editing controls. Tap for warm light; long-press to adjust brightness.
 
-Proposed source: `https://0chium.github.io/Lantern/` (not yet published/live-validated). Prepared links: [Add to Sileo](sileo://source/https://0chium.github.io/Lantern/) and [Add to Zebra](zbra://sources/add/https://0chium.github.io/Lantern/).
+The APT repository is unsigned. Do not disable package-manager authentication globally.
 
-Once published and validated, add the confirmed HTTPS URL, refresh sources, and install Lantern. CCSupport is required to load the custom module. The metadata-only release candidate `0.1.2-1` declares `mobilesubstrate, com.opa334.ccsupport`; its installed contents are identical to accepted Build #51. The original Build #51 package remains preserved unchanged.
+<details>
+<summary>Activation on the verified Dopamine rootless environment</summary>
 
-Add Lantern using Control Center's editing controls. Tap for warm light; long-press for the expanded intensity slider. The stock flashlight remains available for white light.
-
-Use the package manager's normal update/remove action for Lantern. Turn the flashlight off before changing or removing the package. This package contains no automatic restart maintainer scripts. On the verified environment, activation requires restarting cameracaptured and reloading SpringBoard. A SpringBoard respring alone is not the verified complete procedure.
-
-The established root-shell procedure is:
+The package has no automatic activation scripts. Restart `cameracaptured` and reload SpringBoard using the established root-shell procedure:
 
 ```sh
 /var/jb/usr/bin/killall -TERM cameracaptured
 /var/jb/usr/bin/sbreload
 ```
 
-These are explicit activation operations, not commands automatically performed by this package. They interrupt Camera and Control Center processes; close Camera before proceeding. Use the supported environment only. Package-manager installation/removal and these activation steps together still require release-client validation before publication. Do not upgrade unrelated packages merely to install Lantern.
+These operations interrupt Camera and Control Center. A SpringBoard respring alone is not the verified complete procedure. These commands are documented for the reference Dopamine rootless environment; RootHide activation and recovery remain unverified.
 
-## Troubleshooting and support
+</details>
 
-Check the supported environment, installed package version, CCSupport prerequisite and Control Center configuration. For incorrect color at matching brightness, review the known limitation above. If a crash or Safe Mode occurs, stop testing and preserve existing evidence without deliberately reproducing it.
+Use the package manager's normal update or remove action for Lantern. On the verified environment, repeat the activation procedure afterward to refresh loaded code. Do not upgrade unrelated packages merely to install Lantern.
 
-Report problems through https://github.com/0chium/Lantern/issues/new?template=bug_report.yml with device, iOS/build, jailbreak, Lantern version and exact observations. Review attachments for private information before posting. Request features through the existing feature-request form.
+## Known limitations and reported problems
 
-## Artifact verification
+- Switching between Lantern and Apple's flashlight at the same brightness may require a second interaction to update physical output.
+- Apple's expanded flashlight intensity interface can display its active indicator while Lantern is operating.
 
-Release candidate: com.ochium.lantern 0.1.2-1, iphoneos-arm64 (Build #51 payload, dependency-only revision).
+The reported white-only and Safe Mode problems above remain unresolved. A visible Control Center control does not establish correct physical flashlight output. No root cause is confirmed for those reports.
+
+## Troubleshooting and reporting
+
+Check the installed Lantern version, compatibility table, CCSupport and whether Lantern was added to Control Center. If a crash or Safe Mode occurs, stop testing and preserve existing evidence; do not deliberately reproduce it to obtain logs.
+
+- [Report compatibility](https://github.com/0chium/Lantern/issues/new?template=compatibility_report.yml), including successful and unsuccessful installations.
+- [Report a bug](https://github.com/0chium/Lantern/issues/new?template=bug_report.yml).
+- [Request a feature](https://github.com/0chium/Lantern/issues/new?template=feature_request.yml).
+
+Reports and attachments are public. Never post passwords, tokens, Apple ID details, unique device identifiers or unredacted sensitive logs. Keep original logs locally and share only a redacted, relevant copy. Logs are optional; if you cannot share them safely, describe the observed behavior instead.
+
+## Release verification
+
+Production package: `com.ochium.lantern`, version `0.1.2-1`, architecture `iphoneos-arm64`.
+
+[Download the accepted package](https://0chium.github.io/debs/com.ochium.lantern_0.1.2-1_iphoneos-arm64.deb).
 
 SHA-256:
 `0456e46ca5000f2218d023f39b6d29f1f415b354d89b2a8cbf73a4da09b295a8`
 
-Preserved original Build #51 SHA-256: `098ed281b45d68f5214b183daf37763852beb755338c5c9e18e7ebc687ebc904`.
-
-The working implementation and artwork correspond to accepted commit `82e4d8e8c4b28af822ade2ab508b821350ddddb0`. Release-source control metadata additionally records version `0.1.2-1` and the CCSupport dependency. The distributed candidate is a verified metadata-only repack of Build #51, not a newly compiled artifact. Do not substitute diagnostic builds with the same version number.
+The implementation derives from accepted Build51 commit `82e4d8e8c4b28af822ade2ab508b821350ddddb0`. Version `0.1.2-1` is a metadata-only revision adding the CCSupport dependency; the installed Build51 payload is unchanged. Build57 and other diagnostic builds are experimental, not the production release. Use the accepted APT package rather than diagnostic branches or Actions artifacts for production installation.
 
 ## License
 
-Original Lantern code and project-authored build configuration/documentation are licensed under MIT; see `LICENSE`. The copyright notice uses “2026 Lantern contributors.” This scope excludes `Resources/*.png`, Apple-owned material and third-party reference material. The six custom PNGs have independent design/editing provenance, with stock imagery used as reference only; redistribution of these six unmodified PNGs as part of Lantern is permitted with attribution to Lantern contributors under `ARTWORK_PERMISSION.md`, not MIT. No Apple or third-party research reference files are included in the release-source snapshot.
+Original Lantern code and project-authored build configuration/documentation use the scoped [MIT license](LICENSE). Artwork has [separate redistribution permission](ARTWORK_PERMISSION.md), requires attribution to Lantern contributors, and is not licensed under MIT. Neither notice grants rights to Apple-owned or third-party reference materials.

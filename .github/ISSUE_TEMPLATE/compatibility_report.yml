@@ -1,0 +1,142 @@
+name: Compatibility report
+description: Report a successful, unsuccessful or incomplete Lantern installation.
+title: "[Compatibility] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report what you have already observed in ordinary use. Successful and unsuccessful installations are both useful. Leave optional unknown details blank. For a required detail you cannot confirm, write 'unknown'. no terminal commands or new diagnostic tools are required.
+        A selected Control Center control is not proof of physical light output. If a crash or Safe Mode occurred, stop testing; do not deliberately reproduce it to complete this form.
+        Reports and attachments are public. Never post passwords, tokens, Apple ID details, serial numbers, UDIDs or other personal information. Do not upload unredacted sensitive logs or a full sysdiagnose. Keep original logs locally and share only a redacted, relevant copy if safe; logs are optional.
+  - type: input
+    id: device
+    attributes:
+      label: Device model
+      description: Include the model identifier if known; do not include serial numbers or other unique device identifiers.
+      placeholder: "iPhone SE (2nd generation), iPhone12,8"
+    validations:
+      required: true
+  - type: input
+    id: ios
+    attributes:
+      label: iOS version and build
+      description: Give the exact iOS version. Include its build number if known; otherwise say the build is unknown.
+      placeholder: "iOS 18.2 / 22C152"
+    validations:
+      required: true
+  - type: input
+    id: jailbreak
+    attributes:
+      label: Jailbreak name and version
+      description: Identify the active jailbreak. If its version is unknown, say so.
+      placeholder: "Dopamine 3.0.10"
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Jailbreak environment
+      options:
+        - "Rootless"
+        - "RootHide"
+        - "Other / unknown"
+      default: 2
+    validations:
+      required: false
+  - type: input
+    id: conversion
+    attributes:
+      label: Package conversion, if applicable
+      description: Name the conversion tool and version if used. If the package was not converted, or you do not know, say so or leave blank.
+    validations:
+      required: false
+  - type: input
+    id: injection-provider
+    attributes:
+      label: Injection provider, if known
+      description: Provider name and version, if already known. Leave blank if unknown; do not install tools to find it.
+    validations:
+      required: false
+  - type: input
+    id: lantern-version
+    attributes:
+      label: Lantern version
+      description: Installed version, or the version attempted if installation failed. Say unknown if you cannot confirm it.
+      placeholder: "0.1.2-1"
+    validations:
+      required: true
+  - type: input
+    id: installation-source
+    attributes:
+      label: Installation source
+      description: Repository or package source. For a local or converted package, describe its origin without posting personal file paths.
+      placeholder: "https://0chium.github.io/"
+    validations:
+      required: false
+  - type: dropdown
+    id: result
+    attributes:
+      label: Overall result
+      options:
+        - "Working in observed use"
+        - "Partly working"
+        - "Installed, but not working"
+        - "Installation failed"
+        - "Uncertain / not fully tested"
+    validations:
+      required: true
+  - type: dropdown
+    id: control-appears
+    attributes:
+      label: Does the Lantern Control Center control appear?
+      options:
+        - "Yes"
+        - "No"
+        - "Not checked / unknown"
+      default: 2
+    validations:
+      required: false
+  - type: textarea
+    id: physical-output
+    attributes:
+      label: Physical flashlight behavior
+      description: Describe the actual LED output, not only the selected control. Note stock white output, Lantern warm/yellow or white output, and whether OFF leaves the LED completely dark. State not checked for anything unobserved.
+      placeholder: |
+        Stock flashlight:
+        Lantern:
+        After OFF:
+    validations:
+      required: false
+  - type: dropdown
+    id: brightness
+    attributes:
+      label: Does Lantern brightness control work?
+      options:
+        - "Working"
+        - "Partly working"
+        - "Not working"
+        - "Not checked / unknown"
+      default: 3
+    validations:
+      required: false
+  - type: textarea
+    id: failures
+    attributes:
+      label: Crashes, Safe Mode or other failures
+      description: Describe any failures already observed, including unresponsive controls or camera problems. Identify the process or approximate time only if known. Successful reports can leave this blank.
+    validations:
+      required: false
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps associated with a failure
+      description: Describe the actions that preceded the observed problem, including the starting mode and brightness if known. Do not repeat a crash. Leave blank for successful reports or unknown steps.
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Optional diagnostic logs or additional context
+      description: Attach only a redacted, relevant crash report or log already available and safe to share. Keep originals locally. No full device logs, credentials or sensitive personal information. Say that a report exists if you cannot safely post it.
+    validations:
+      required: false
