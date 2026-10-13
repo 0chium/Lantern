@@ -11,6 +11,7 @@ Install the production release from [0chium's Repo](https://0chium.github.io/).
 | Status | Configuration | Evidence |
 | --- | --- | --- |
 | Verified working | iPhone SE (2nd generation), iPhone12,8; iOS 18.2 (22C152); Dopamine 3.0.10 rootless | Physical white/warm/off behavior verified on device. Tested with CCSupport 1.3.13-3~ios18fix1. |
+| Owner-observed problem | iPhone 14 Pro, iPhone15,2; iOS 17.0 (21A329); Dopamine rootless | Selecting Lantern causes a SpringBoard crash and Safe Mode during Control Center initialization. Cause unknown; warm-light capability on iPhone 14 Pro is unverified. |
 | Tester-reported problem, not independently verified | iPhone 11 Pro; iOS 18.1.1; converted RootHide installation | Control Center control reportedly appears, but physical output remains white. Cause under investigation. |
 | Tester-reported problem, not independently verified | iOS 16.5.1; other configuration details incomplete | Safe Mode reported. Cause and exact installed package not established. |
 | Tester-reported functionality, not independently verified | Other iOS 18 configurations; details incomplete | Functionality reports do not establish support for every device, jailbreak or iOS 18 version. |
