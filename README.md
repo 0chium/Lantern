@@ -2,7 +2,11 @@
 
 ![Lantern icon](https://0chium.github.io/assets/Lantern-public-on.png)
 
-Lantern adds warm/yellow flashlight control to iOS Control Center, using Apple's native expanded intensity slider. The stock flashlight remains available for white light.
+**A warmer light. Right in Control Center.**
+
+Tap Lantern for warm light. Press and hold to adjust brightness with Apple's native intensity slider. Keep the stock flashlight for white light.
+
+No Settings pane or preferences to configure.
 
 Install the production release from [0chium's Repo](https://0chium.github.io/).
 
@@ -22,14 +26,12 @@ The physical results below were obtained with the accepted 0.1.2-1 release. Vers
 
 Sileo source refresh and the Lantern listing were verified on the reference device. This does not establish every installation, update or removal scenario. RootHide conversion alone is not confirmation of compatibility.
 
-## Installation, updates and removal
+## Install and use
 
 1. Turn the flashlight off and close Camera before installing, updating or removing Lantern.
 2. [Add to Sileo](sileo://source/https://0chium.github.io/), or manually add `https://0chium.github.io/` in Sileo's Sources.
 3. Refresh sources and install **Lantern 0.1.3-1** through the package manager. Dependencies are `mobilesubstrate` and `com.opa334.ccsupport`; compatible CCSupport is needed for the Control Center module.
 4. Complete activation below, then add Lantern using Control Center's editing controls. Tap for warm light; long-press to adjust brightness.
-
-The APT repository is unsigned. Do not disable package-manager authentication globally.
 
 <details>
 <summary>Activation on the owner-verified Dopamine rootless configurations</summary>
@@ -47,7 +49,7 @@ These operations interrupt Camera and Control Center. A SpringBoard respring alo
 
 </details>
 
-Use the package manager's normal update or remove action for Lantern. On the verified environment, repeat the activation procedure afterward to refresh loaded code. Do not upgrade unrelated packages merely to install Lantern.
+Use your package manager for updates and removal, then repeat the documented activation procedure on the verified environment. The repository is unsigned; keep package-manager authentication enabled.
 
 ## Known limitations and reported problems
 
