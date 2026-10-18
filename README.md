@@ -1,4 +1,4 @@
-# Lantern 0.1.2-1
+# Lantern 0.1.3-1
 
 ![Lantern icon](https://0chium.github.io/assets/Lantern-public-on.png)
 
@@ -7,6 +7,8 @@ Lantern adds warm/yellow flashlight control to iOS Control Center, using Apple's
 Install the production release from [0chium's Repo](https://0chium.github.io/).
 
 ## Compatibility
+
+The physical results below were obtained with the accepted 0.1.2-1 release. Version 0.1.3-1 preserves its exact installed payload; testing of the newly versioned package upgrade is pending.
 
 | Status | Configuration | Evidence |
 | --- | --- | --- |
@@ -24,7 +26,7 @@ Sileo source refresh and the Lantern listing were verified on the reference devi
 
 1. Turn the flashlight off and close Camera before installing, updating or removing Lantern.
 2. [Add to Sileo](sileo://source/https://0chium.github.io/), or manually add `https://0chium.github.io/` in Sileo's Sources.
-3. Refresh sources and install **Lantern 0.1.2-1** through the package manager. Dependencies are `mobilesubstrate` and `com.opa334.ccsupport`; compatible CCSupport is needed for the Control Center module.
+3. Refresh sources and install **Lantern 0.1.3-1** through the package manager. Dependencies are `mobilesubstrate` and `com.opa334.ccsupport`; compatible CCSupport is needed for the Control Center module.
 4. Complete activation below, then add Lantern using Control Center's editing controls. Tap for warm light; long-press to adjust brightness.
 
 The APT repository is unsigned. Do not disable package-manager authentication globally.
@@ -66,14 +68,16 @@ Reports and attachments are public. Never post passwords, tokens, Apple ID detai
 
 ## Release verification
 
-Production package: `com.ochium.lantern`, version `0.1.2-1`, architecture `iphoneos-arm64`.
+Production package: `com.ochium.lantern`, version `0.1.3-1`, architecture `iphoneos-arm64`.
 
-[Download the accepted package](https://0chium.github.io/debs/com.ochium.lantern_0.1.2-1_iphoneos-arm64.deb).
+[Download Lantern 0.1.3-1](https://0chium.github.io/debs/com.ochium.lantern_0.1.3-1_iphoneos-arm64.deb).
 
 SHA-256:
-`0456e46ca5000f2218d023f39b6d29f1f415b354d89b2a8cbf73a4da09b295a8`
+`652a6598e9cdb417e88f87219d2efb94d2e9b1a838a265074942a862c269c0fc`
 
-The implementation derives from accepted Build51 commit `82e4d8e8c4b28af822ade2ab508b821350ddddb0`. Version `0.1.2-1` is a metadata-only revision adding the CCSupport dependency; the installed Build51 payload is unchanged. Build57 and other diagnostic builds are experimental, not the production release. Use the accepted APT package rather than diagnostic branches or Actions artifacts for production installation.
+The implementation derives from accepted Build51 commit `82e4d8e8c4b28af822ade2ab508b821350ddddb0`. Version `0.1.3-1` changes only the package version from `0.1.2-1`: all installed binaries and resources are byte-identical. No functional code, hooks, LED mapping, injection filters, dependencies or activation behavior changed. Build57 and other diagnostic builds are experimental, not the production release. Use the production APT package rather than diagnostic branches or Actions artifacts.
+
+The previous [0.1.2-1 package](https://0chium.github.io/debs/com.ochium.lantern_0.1.2-1_iphoneos-arm64.deb) remains available for rollback; SHA-256: `0456e46ca5000f2218d023f39b6d29f1f415b354d89b2a8cbf73a4da09b295a8`.
 
 Credit to [PoomSmart](https://github.com/PoomSmart) for earlier ISP LED-control work in [Amber](https://github.com/PoomSmart/Amber).
 
