@@ -2,22 +2,34 @@
 
 ![Lantern icon](https://0chium.github.io/assets/Lantern-public-on.png)
 
-**A warmer light. Right in Control Center.**
+**Warm lighting with its own toggle for Control Center.**
 
-Tap Lantern for warm light. Press and hold to adjust brightness with Apple's native intensity slider. Keep the stock flashlight for white light.
+For iPhone 11, iPhone SE (2nd generation), and other iPhones with compatible warm LEDs. iPhone 14 and later are not supported.
 
-No Settings pane or preferences to configure.
+Tap Lantern for warm light. Press and hold to adjust brightness using Apple’s native slider. Keep Apple’s flashlight for white light.
+
+**Tested on:**
+
+- **iPhone SE (2nd generation):** iOS 18.2 and 26.0.1
+- **iPhone 11 Pro Max:** iOS 18.3.2
+
+Other configurations remain unverified.
+
+Requires a compatible jailbreak and CCSupport. No preferences to configure. See [Installation and activation](#install-and-use) for setup.
+
+Developed by 0chium, with credit to [PoomSmart](https://github.com/PoomSmart) for earlier LED-control work in [Amber](https://github.com/PoomSmart/Amber). Free and open source.
 
 Install the production release from [0chium's Repo](https://0chium.github.io/).
 
 ## Compatibility
 
-The physical results below were obtained with the accepted 0.1.2-1 release. Version 0.1.3-1 preserves its exact installed payload; testing of the newly versioned package upgrade is pending.
+The iOS 18 physical results below were obtained with the accepted 0.1.2-1 release. Version 0.1.3-1 preserves its exact installed payload. The iOS 26.0.1 result is owner-reported; these configurations do not establish blanket iOS or jailbreak support.
 
 | Status | Configuration | Evidence |
 | --- | --- | --- |
 | Verified working | iPhone SE (2nd generation), iPhone12,8; iOS 18.2 (22C152); Dopamine 3.0.10 rootless | Physical white/warm/off behavior verified on device. Tested with CCSupport 1.3.13-3~ios18fix1. |
 | Owner-verified working after activation | iPhone 11 Pro Max, iPhone12,5; iOS 18.3.2 (22D82); Dopamine 3 rootless; ElleKit 1.2; CCSupport installed | Lantern 0.1.2-1 installed; Control Center icon/brightness and physical warm/OFF, native white ON/OFF, and return to warm passed after the documented activation procedure below. Verified only on this configuration. |
+| Owner-reported working | iPhone SE (2nd generation), iPhone12,8; iOS 26.0.1 (23A355) | Owner reports working Lantern. The installed package and jailbreak/dependency versions were not recorded with this report. |
 | Owner-observed problem | iPhone 14 Pro, iPhone15,2; iOS 17.0 (21A329); Dopamine rootless | Selecting Lantern causes a SpringBoard crash and Safe Mode during Control Center initialization. Cause unknown; warm-light capability on iPhone 14 Pro is unverified. |
 | Tester-reported problem, not independently verified | iPhone 11 Pro; iOS 18.1.1; converted RootHide installation | Control Center control reportedly appears, but physical output remains white. Cause under investigation. |
 | Tester-reported problem, not independently verified | iOS 16.5.1; other configuration details incomplete | Safe Mode reported. Cause and exact installed package not established. |
