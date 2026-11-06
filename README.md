@@ -1,4 +1,4 @@
-# Lantern 0.1.3-1
+# Lantern 0.1.4-1
 
 ![Lantern icon](https://0chium.github.io/assets/Lantern-public-on.png)
 
@@ -23,7 +23,7 @@ Install the production release from [0chium's Repo](https://0chium.github.io/).
 
 ## Compatibility
 
-The iOS 18 physical results below were obtained with the accepted 0.1.2-1 release. Version 0.1.3-1 preserves its exact installed payload. The iOS 26.0.1 result is owner-reported; these configurations do not establish blanket iOS or jailbreak support.
+The iOS 18 physical results below were obtained with the accepted 0.1.2-1 release. Version 0.1.4-1 preserves the same installed binaries and resources. The iOS 26.0.1 result is owner-reported; these configurations do not establish blanket iOS or jailbreak support.
 
 | Status | Configuration | Evidence |
 | --- | --- | --- |
@@ -42,7 +42,7 @@ Sileo source refresh and the Lantern listing were verified on the reference devi
 
 1. Turn the flashlight off and close Camera before installing, updating or removing Lantern.
 2. [Add to Sileo](sileo://source/https://0chium.github.io/), or manually add `https://0chium.github.io/` in Sileo's Sources.
-3. Refresh sources and install **Lantern 0.1.3-1** through the package manager. Dependencies are `mobilesubstrate` and `com.opa334.ccsupport`; compatible CCSupport is needed for the Control Center module.
+3. Refresh sources and install **Lantern 0.1.4-1** through the package manager. Dependencies are `mobilesubstrate`, `com.opa334.ccsupport`, and `cy+model.iphone (<< 14.7)`; compatible CCSupport is needed for the Control Center module.
 4. Complete activation below, then add Lantern using Control Center's editing controls. Tap for warm light; long-press to adjust brightness.
 
 <details>
@@ -80,18 +80,22 @@ Check the installed Lantern version, compatibility table, CCSupport and whether 
 
 Reports and attachments are public. Never post passwords, tokens, Apple ID details, unique device identifiers or unredacted sensitive logs. Keep original logs locally and share only a redacted, relevant copy. Logs are optional; if you cannot share them safely, describe the observed behavior instead.
 
+## What's new in 0.1.4-1
+
+Installation is restricted to iPhones with older warm/white flashlight LED hardware (iPhone 13 series and earlier, including iPhone SE 3). No flashlight functionality changed.
+
 ## Release verification
 
-Production package: `com.ochium.lantern`, version `0.1.3-1`, architecture `iphoneos-arm64`.
+Production package: `com.ochium.lantern`, version `0.1.4-1`, architecture `iphoneos-arm64`.
 
-[Download Lantern 0.1.3-1](https://0chium.github.io/debs/com.ochium.lantern_0.1.3-1_iphoneos-arm64.deb).
+[Download Lantern 0.1.4-1](https://0chium.github.io/debs/com.ochium.lantern_0.1.4-1_iphoneos-arm64.deb).
 
 SHA-256:
-`652a6598e9cdb417e88f87219d2efb94d2e9b1a838a265074942a862c269c0fc`
+`e0405f41558921263dca44ae1a940707ff9455e338161a40de03933e3b9f887d`
 
-The implementation derives from accepted Build51 commit `82e4d8e8c4b28af822ade2ab508b821350ddddb0`. Version `0.1.3-1` changes only the package version from `0.1.2-1`: all installed binaries and resources are byte-identical. No functional code, hooks, LED mapping, injection filters, dependencies or activation behavior changed. Build57 and other diagnostic builds are experimental, not the production release. Use the production APT package rather than diagnostic branches or Actions artifacts.
+The implementation derives from accepted Build51 commit `82e4d8e8c4b28af822ade2ab508b821350ddddb0`. Version `0.1.4-1` is a metadata-only repack of `0.1.3-1` with the device-model dependency `cy+model.iphone (<< 14.7)`. The installed binaries and resources are unchanged, with no modifications to the flashlight control code, LED mapping, injection filters, or activation behavior. Build57 and other diagnostic builds are experimental, not the production release. Use the production APT package rather than diagnostic branches or Actions artifacts.
 
-The previous [0.1.2-1 package](https://0chium.github.io/debs/com.ochium.lantern_0.1.2-1_iphoneos-arm64.deb) remains available for rollback; SHA-256: `0456e46ca5000f2218d023f39b6d29f1f415b354d89b2a8cbf73a4da09b295a8`.
+The previous [0.1.3-1 package](https://0chium.github.io/debs/com.ochium.lantern_0.1.3-1_iphoneos-arm64.deb) remains available for rollback; SHA-256: `652a6598e9cdb417e88f87219d2efb94d2e9b1a838a265074942a862c269c0fc`.
 
 Credit to [PoomSmart](https://github.com/PoomSmart) for earlier ISP LED-control work in [Amber](https://github.com/PoomSmart/Amber).
 
